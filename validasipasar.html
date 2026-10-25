@@ -2,94 +2,55 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Validasi Pasar V2 - Kertanegara Mobile</title>
+<title>Validasi Pasar V4 - Sumber Dinamis Kertanegara</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>
-.input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; font-size:13px; width:100%; background:white}
-.card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)}
-.label{font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase}
-.no-scrollbar::-webkit-scrollbar{display:none}
-@media(min-width:1024px){ .mobile-only{display:none} .desktop-only{display:block} }
-@media(max-width:1023px){ .desktop-only{display:none} }
-</style>
+<style>.input{border:1px solid #e2e8f0; border-radius:14px; padding:9px 11px; font-size:12px; width:100%; background:white} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .label{font-size:8px; font-weight:800; text-transform:uppercase}</style>
 </head>
-<body class="bg-[#f6f5f2] pb-24">
+<body class="bg-[#f6f5f2] pb-28">
 <div class="bg-[#BE1E2D] text-white p-4 sticky top-0 z-40">
 <div class="max-w-[1200px] mx-auto flex justify-between items-center">
-<div><b class="text-[15px]">📊 VALIDASI PASAR V2 - KERTANEGARA</b><p class="text-[10px] opacity-80" id="fbStatus">Connecting...</p></div>
-<button onclick="addBarang()" class="bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black">+ Barang</button>
+<div><b class="text-[14px]">📊 VALIDASI PASAR V4 - SUMBER DINAMIS</b><p class="text-[10px] opacity-80" id="fbStatus">Kertanegara - Banyak Sumber</p></div>
+<div class="flex gap-2"><button onclick="openSumber()" class="bg-black px-3 py-2 rounded-full text-[10px]">🏪 Sumber</button><button onclick="addBarang()" class="bg-white text-[#BE1E2D] px-3 py-2 rounded-full text-[10px] font-black">+ Barang</button></div>
 </div>
 </div>
 
 <div class="max-w-[1200px] mx-auto p-3 space-y-3">
-<!-- STAT -->
-<div class="grid grid-cols-3 gap-2">
-<div class="card p-3 border-l-4 border-green-600"><p class="label text-green-700">Rata Untung</p><b id="avgUntung" class="text-[14px]">Rp 0</b></div>
-<div class="card p-3 border-l-4 border-blue-600"><p class="label text-blue-700">Top Cuan</p><b id="top1" class="text-[11px]">-</b></div>
-<div class="card p-3 border-l-4 border-orange-600"><p class="label text-orange-700">Total Items</p><b id="totalItem" class="text-[14px]">0</b></div>
+<div class="flex gap-2 overflow-auto pb-1" id="chipSumber"></div>
+
+<div class="grid grid-cols-3 gap-2 text-[10px]">
+<div class="card p-3"><b>Termurah Sering:</b><br><span id="agenTop" class="font-black text-[12px]">-</span></div>
+<div class="card p-3"><b>Rata Untung:</b><br><span id="avgUntung" class="font-black text-[12px]">Rp 0</span></div>
+<div class="card p-3"><b>Barang:</b><br><span id="totalItem" class="font-black text-[12px]">0</span></div>
 </div>
 
-<!-- TAB -->
 <div class="flex gap-2">
-<button onclick="setTab('input')" id="tab-input" class="flex-1 bg-[#BE1E2D] text-white py-3 rounded-full text-[11px] font-bold">📝 Input Harga</button>
-<button onclick="setTab('laporan')" id="tab-laporan" class="flex-1 bg-white border py-3 rounded-full text-[11px] font-bold">📄 Laporan & Download</button>
+<button onclick="setTab('input')" id="tab-input" class="flex-1 bg-[#BE1E2D] text-white py-3 rounded-full text-[11px] font-bold">📝 Input</button>
+<button onclick="setTab('laporan')" id="tab-laporan" class="flex-1 bg-white border py-3 rounded-full text-[11px] font-bold">📄 Laporan</button>
 </div>
 
-<!-- INPUT TAB -->
-<div id="view-input">
-<!-- DESKTOP TABLE -->
-<div class="desktop-only card p-4 overflow-auto">
-<table class="w-full text-[11px]"><thead class="text-[9px] bg-slate-50"><tr><th class="p-2 text-left">Barang</th><th class="p-2">Grosir Kertanegara</th><th class="p-2">Warung Kasih</th><th class="p-2">Selisih</th><th class="p-2">Rekom Kopdes</th><th></th></tr></thead><tbody id="tbodyDesktop"></tbody></table>
-</div>
+<div id="view-input" class="space-y-3"></div>
 
-<!-- MOBILE CARDS -->
-<div class="mobile-only space-y-3" id="listMobile"></div>
+<div id="view-laporan" class="hidden">
+<div class="card p-3">
+<div class="flex justify-between flex-wrap gap-2"><h2 class="font-bold text-[11px]">Laporan Banyak Sumber</h2><div class="flex gap-2"><button onclick="downloadPDF()" class="bg-red-600 text-white px-3 py-1 rounded-full text-[10px]">PDF</button><button onclick="downloadExcel()" class="bg-green-600 text-white px-3 py-1 rounded-full text-[10px]">Excel</button><button onclick="downloadJPG()" class="bg-blue-600 text-white px-3 py-1 rounded-full text-[10px]">JPG</button></div></div>
+<div id="laporanPreview" class="mt-3 bg-white border rounded-xl p-3 overflow-auto">
+<div class="text-center border-b pb-2"><b class="text-[12px]">LAPORAN VALIDASI PASAR - KERTANEGARA - BANYAK SUMBER</b><br><span class="text-[9px]" id="tglLaporan"></span></div>
+<table class="w-full mt-3 text-[9px] border" id="tableLaporan"><thead class="bg-slate-50"></thead><tbody></tbody></table>
+<div class="mt-3 bg-yellow-50 p-2 rounded-xl text-[10px]" id="rekomText"></div>
 </div>
-
-<!-- LAPORAN TAB -->
-<div id="view-laporan" class="hidden space-y-3">
-<div class="card p-4">
-<div class="flex justify-between items-center flex-wrap gap-2">
-<h2 class="font-black text-[13px]">📄 Preview Laporan 1 Halaman</h2>
-<div class="flex gap-2">
-<button onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded-full text-[10px] font-bold">📕 PDF</button>
-<button onclick="downloadExcel()" class="bg-green-600 text-white px-4 py-2 rounded-full text-[10px] font-bold">📗 Excel</button>
-<button onclick="downloadJPG()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-[10px] font-bold">🖼️ JPG</button>
+</div>
 </div>
 </div>
 
-<div id="laporanPreview" class="mt-4 bg-white border rounded-xl p-4">
-<div class="text-center border-b pb-3">
-<b class="text-[14px]">LAPORAN VALIDASI PASAR - KERTANEGARA</b><br>
-<span class="text-[11px] text-slate-500">Minggu Ke-4 - KDKMP Kasih Kertanegara - Purbalingga</span><br>
-<span class="text-[10px] text-slate-400" id="tglLaporan"></span>
-</div>
-
-<div class="mt-4">
-<p class="font-bold text-[11px]">✅ 10 BARANG PALING CUAN (Kulak Pertama)</p>
-<table class="w-full mt-2 text-[10px] border" id="tableCuan">
-<thead class="bg-green-50"><tr><th class="border p-2">No</th><th class="border p-2 text-left">Barang</th><th class="border p-2">Grosir</th><th class="border p-2">Warung Kasih</th><th class="border p-2">Untung</th><th class="border p-2">Rekom Kopdes</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
-
-<div class="mt-4">
-<p class="font-bold text-[11px]">❌ 5 BARANG JANGAN DULU (Untung Tipis)</p>
-<table class="w-full mt-2 text-[10px] border" id="tableRugi">
-<thead class="bg-red-50"><tr><th class="border p-2">No</th><th class="border p-2 text-left">Barang</th><th class="border p-2">Untung</th><th class="border p-2">Alasan</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
-
-<div class="mt-4 bg-yellow-50 border p-3 rounded-xl text-[11px]">
-<b>💡 Rekomendasi Kulakan:</b><br>
-<span id="rekomText"></span>
-</div>
-
-<div class="mt-3 text-[9px] text-slate-400 text-center">Generated by Validasi Pasar Kertanegara - Firebase Realtime - kasih-kopdes</div>
-</div>
+<!-- MODAL SUMBER -->
+<div id="modalSumber" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+<div class="bg-white rounded-[20px] w-full max-w-[400px] p-5">
+<h2 class="font-black text-[13px]">🏪 Kelola Sumber Grosir</h2><p class="text-[10px] text-slate-500 mt-1">Tambah agen sebanyak-banyaknya. Misal: Agen Kertanegara, Agen Bobotsari, Grosir Purbalingga, Shopee, Kulon, dll.</p>
+<div id="listSumber" class="mt-3 space-y-2"></div>
+<div class="flex gap-2 mt-3"><input id="newSumber" class="input flex-1" placeholder="Nama sumber baru, contoh: Agen Purwokerto"><button onclick="addSumber()" class="bg-[#BE1E2D] text-white px-4 rounded-full text-[10px]">+ Tambah</button></div>
+<button onclick="closeSumber()" class="w-full bg-slate-900 text-white py-2 rounded-full mt-4 text-[11px]">Tutup</button>
 </div>
 </div>
 </div>
@@ -97,7 +58,6 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
-
 const firebaseConfig = {
  apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
  authDomain: "kasih-kopdes.firebaseapp.com",
@@ -110,30 +70,58 @@ const firebaseConfig = {
 };
 const appFB = initializeApp(firebaseConfig);
 const db = getDatabase(appFB);
-document.getElementById('fbStatus').innerText='✅ Realtime - Kertanegara - '+new Date().toLocaleDateString('id-ID');
 
+let sumbers=[]; // [{id, nama}]
 let barangs=[];
 let tab='input';
-const defaultBarang=[
- {nama:'Beras Medium 5kg', grosir:62000, eceran:70000},
- {nama:'Beras Premium 5kg', grosir:68000, eceran:75000},
- {nama:'Minyak Goreng 1L', grosir:14500, eceran:17000},
- {nama:'Minyak 2L', grosir:28000, eceran:34000},
- {nama:'Gula Pasir 1kg', grosir:13500, eceran:16000},
- {nama:'Telur 1kg', grosir:26000, eceran:30000},
- {nama:'Mie Instan Dus', grosir:95000, eceran:110000},
- {nama:'Kopi Renteng', grosir:9000, eceran:12000},
- {nama:'Teh Celup', grosir:5000, eceran:7000},
- {nama:'Garam', grosir:3000, eceran:4000},
-];
 
-const barangRef=ref(db,'validasi_pasar_kertanegara_v2/barangs');
-onValue(barangRef, snap=>{
+const sumberRef=ref(db,'validasi_pasar_v4_kertanegara/sumbers');
+const barangRef=ref(db,'validasi_pasar_v4_kertanegara/barangs');
+
+onValue(sumberRef, snap=>{
  let data=snap.val();
- if(!data){ defaultBarang.forEach(b=> push(barangRef, {...b, created:Date.now()})); return; }
- barangs=[]; Object.keys(data).forEach(k=>{ barangs.push({id:k, ...data[k]}); });
+ if(!data){
+  // seed 3 awal
+  push(sumberRef,{nama:'Grosir Kertanegara'}); push(sumberRef,{nama:'Grosir Bobotsari'}); push(sumberRef,{nama:'Shopee Online'});
+  return;
+ }
+ sumbers=[]; Object.keys(data).forEach(k=> sumbers.push({id:k, nama:data[k].nama}));
+ renderSumberChip();
  render();
 });
+
+onValue(barangRef, snap=>{
+ let data=snap.val();
+ if(!data && sumbers.length){
+  // seed barang
+  let def=[{nama:'Beras 5kg', eceran:70000},{nama:'Minyak 2L', eceran:34000},{nama:'Gula 1kg', eceran:16000}];
+  def.forEach(b=> push(barangRef,{...b, harga:{}, created:Date.now()}));
+  return;
+ }
+ barangs=[]; if(data) Object.keys(data).forEach(k=> barangs.push({id:k, ...data[k]}));
+ render();
+});
+
+function getTermurah(b){
+ let best={h:0, nama:'-', id:null};
+ Object.keys(b.harga||{}).forEach(sid=>{
+  let h=Number(b.harga[sid]||0); if(h>0 && (best.h==0 || h<best.h)){
+   let s=sumbers.find(x=>x.id==sid); best={h, nama:s? s.nama:'-', id:sid};
+  }
+ });
+ return best;
+}
+
+function renderSumberChip(){
+ document.getElementById('chipSumber').innerHTML=sumbers.map(s=>`<span class="bg-white border px-3 py-1 rounded-full text-[10px] whitespace-nowrap">🏪 ${s.nama}</span>`).join('');
+ document.getElementById('listSumber').innerHTML=sumbers.map(s=>`<div class="flex gap-2 items-center"><input value="${s.nama}" id="s-${s.id}" class="input flex-1 text-[11px]"><button onclick="saveSumber('${s.id}')" class="bg-slate-900 text-white px-3 py-2 rounded-full text-[10px]">Save</button><button onclick="delSumber('${s.id}')" class="text-[12px]">🗑️</button></div>`).join('');
+}
+
+window.openSumber=()=>document.getElementById('modalSumber').classList.remove('hidden');
+window.closeSumber=()=>document.getElementById('modalSumber').classList.add('hidden');
+window.addSumber=async()=>{ let n=document.getElementById('newSumber').value.trim(); if(!n) return; await push(sumberRef,{nama:n}); document.getElementById('newSumber').value=''; }
+window.saveSumber=async(id)=>{ let n=document.getElementById('s-'+id).value; await update(ref(db,'validasi_pasar_v4_kertanegara/sumbers/'+id), {nama:n}); }
+window.delSumber=async(id)=>{ if(confirm('Hapus sumber ini? Harga yang sudah diinput di sumber ini ikut hilang.')) await remove(ref(db,'validasi_pasar_v4_kertanegara/sumbers/'+id)); }
 
 window.setTab=(t)=>{
  tab=t;
@@ -145,84 +133,60 @@ window.setTab=(t)=>{
 }
 
 function render(){
- // desktop
- document.getElementById('tbodyDesktop').innerHTML=barangs.map(b=>{
-  let selisih=(b.eceran||0)-(b.grosir||0);
-  let rekom=Math.round(b.grosir+selisih*0.7);
-  return `<tr class="border-b"><td class="p-2"><input value="${b.nama}" onchange="editField('${b.id}','nama',this.value)" class="input"></td><td class="p-2"><input type="number" value="${b.grosir}" onchange="editField('${b.id}','grosir',this.value)" class="input"></td><td class="p-2"><input type="number" value="${b.eceran}" onchange="editField('${b.id}','eceran',this.value)" class="input"></td><td class="p-2 text-center"><b class="${selisih>=5000?'text-green-600':selisih>=2000?'text-yellow-600':'text-red-600'}">Rp ${selisih.toLocaleString()}</b></td><td class="p-2 font-bold">Rp ${rekom.toLocaleString()}</td><td><button onclick="hapusBarang('${b.id}')">🗑️</button></td></tr>`;
- }).join('');
-
- // mobile cards - enak di HP
- document.getElementById('listMobile').innerHTML=barangs.map(b=>{
-  let selisih=(b.eceran||0)-(b.grosir||0);
-  let rekom=Math.round(b.grosir+selisih*0.7);
-  let warna=selisih>=5000?'bg-green-100 text-green-800 border-green-200':selisih>=2000?'bg-yellow-100 text-yellow-800 border-yellow-200':'bg-red-100 text-red-800 border-red-200';
-  return `<div class="card p-4 border ${warna}">
-   <div class="flex justify-between"><input value="${b.nama}" onchange="editField('${b.id}','nama',this.value)" class="font-black text-[13px] bg-transparent w-[70%]"><button onclick="hapusBarang('${b.id}')" class="text-[12px]">🗑️</button></div>
-   <div class="grid grid-cols-2 gap-3 mt-3">
-    <div><p class="label">Grosir Kertanegara</p><input type="number" value="${b.grosir}" onchange="editField('${b.id}','grosir',this.value)" class="input mt-1 font-bold text-[14px]"></div>
-    <div><p class="label">Warung Kasih</p><input type="number" value="${b.eceran}" onchange="editField('${b.id}','eceran',this.value)" class="input mt-1 font-bold text-[14px]"></div>
+ if(!sumbers.length) return;
+ document.getElementById('view-input').innerHTML=barangs.map(b=>{
+  let termurah=getTermurah(b);
+  let selisih=(b.eceran||0)-termurah.h;
+  let rekom=termurah.h? Math.round(termurah.h+selisih*0.7):0;
+  return `<div class="card p-4 border">
+   <div class="flex justify-between"><input value="${b.nama}" onchange="editBarangField('${b.id}','nama',this.value)" class="font-black text-[13px] bg-transparent w-[80%]"><button onclick="hapusBarang('${b.id}')" class="text-[12px]">🗑️</button></div>
+   <p class="label mt-3">HARGA GROSIR BANYAK SUMBER (ISI SEMUA YANG KAMU CEK)</p>
+   <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+   ${sumbers.map(s=>{
+    let val=b.harga && b.harga[s.id] ? b.harga[s.id] : '';
+    let isBest=termurah.id==s.id;
+    return `<div><p class="label ${isBest?'text-green-600':''}">${s.nama} ${isBest?'✅ TERMURAH':''}</p><input type="number" value="${val}" onchange="editHarga('${b.id}','${s.id}',this.value)" class="input mt-1 ${isBest?'ring-2 ring-green-500 bg-green-50 font-bold':''}" placeholder="Rp"></div>`;
+   }).join('')}
    </div>
-   <div class="mt-3 flex justify-between items-center bg-white p-3 rounded-xl">
-    <div><p class="label">Selisih Untung</p><b class="text-[14px] ${selisih>=2000?'text-green-600':'text-red-600'}">Rp ${selisih.toLocaleString()}</b><p class="text-[10px]">${b.grosir?((selisih/b.grosir*100).toFixed(1))+'% margin':''}</p></div>
-    <div class="text-right"><p class="label">Rekom Jual Kopdes</p><b class="text-[14px] text-[#BE1E2D]">Rp ${rekom.toLocaleString()}</b><p class="text-[9px]">Lebih murah dari warung</p></div>
+   <div class="grid grid-cols-2 gap-2 mt-3">
+    <div><p class="label text-red-700">Warung Kasih</p><input type="number" value="${b.eceran||''}" onchange="editBarangField('${b.id}','eceran',this.value)" class="input mt-1 font-bold"></div>
+    <div class="bg-slate-900 text-white p-3 rounded-xl"><p class="label text-white/60">AUTO</p><p class="text-[11px]">Termurah: <b class="text-yellow-300">${termurah.nama} Rp ${termurah.h.toLocaleString()}</b></p><p class="text-[11px]">Untung: <b class="text-green-300">Rp ${selisih.toLocaleString()}</b></p><p class="text-[11px]">Rekom Kopdes: <b>Rp ${rekom.toLocaleString()}</b></p></div>
    </div>
   </div>`;
  }).join('');
 
+ let count={}; sumbers.forEach(s=>count[s.id]=0); barangs.forEach(b=>{ let t=getTermurah(b); if(t.id) count[t.id]++; });
+ let topId=Object.keys(count).sort((a,b)=>count[b]-count[a])[0];
+ let topNama=sumbers.find(s=>s.id==topId)?.nama||'-';
+ document.getElementById('agenTop').innerText=`${topNama} (${count[topId]||0} barang)`;
  document.getElementById('totalItem').innerText=barangs.length;
- let sorted=[...barangs].sort((a,b)=>(b.eceran-b.grosir)-(a.eceran-a.grosir));
- if(sorted[0]){ document.getElementById('top1').innerText=sorted[0].nama.substring(0,18); document.getElementById('avgUntung').innerText='Rp '+Math.round(sorted.slice(0,10).reduce((s,x)=>s+(x.eceran-x.grosir),0)/Math.min(10,sorted.length)).toLocaleString(); }
+ let avg=barangs.length? barangs.reduce((s,b)=>{ let tm=getTermurah(b); return s+((b.eceran||0)-tm.h); },0)/barangs.length:0;
+ document.getElementById('avgUntung').innerText='Rp '+Math.round(avg).toLocaleString();
  if(tab=='laporan') renderLaporan();
 }
 
 function renderLaporan(){
- let sorted=[...barangs].sort((a,b)=>(b.eceran-b.grosir)-(a.eceran-a.grosir));
- let top10=sorted.slice(0,10);
- let bottom5=sorted.slice(-5).reverse();
- document.getElementById('tglLaporan').innerText='Tanggal: '+new Date().toLocaleDateString('id-ID',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
-
- document.querySelector('#tableCuan tbody').innerHTML=top10.map((b,i)=>{
-  let selisih=b.eceran-b.grosir; let rekom=Math.round(b.grosir+selisih*0.7);
-  return `<tr><td class="border p-2 text-center">${i+1}</td><td class="border p-2">${b.nama}</td><td class="border p-2">Rp ${b.grosir.toLocaleString()}</td><td class="border p-2">Rp ${b.eceran.toLocaleString()}</td><td class="border p-2 font-bold text-green-700">Rp ${selisih.toLocaleString()}</td><td class="border p-2 font-bold">Rp ${rekom.toLocaleString()}</td></tr>`;
+ let sorted=[...barangs].sort((a,b)=>{ let ta=getTermurah(a); let tb=getTermurah(b); return ((b.eceran||0)-tb.h)-((a.eceran||0)-ta.h); });
+ document.getElementById('tglLaporan').innerText=new Date().toLocaleDateString('id-ID',{weekday:'long', day:'numeric', month:'long', year:'numeric'})+' - Kertanegara';
+ // header dinamis
+ let header=`<tr><th class="border p-2">Barang</th>`+sumbers.map(s=>`<th class="border p-2">${s.nama}</th>`).join('')+`<th class="border p-2 bg-yellow-100">Termurah</th><th class="border p-2">Warung Kasih</th><th class="border p-2">Untung</th><th class="border p-2">Rekom</th></tr>`;
+ document.querySelector('#tableLaporan thead').innerHTML=header;
+ document.querySelector('#tableLaporan tbody').innerHTML=sorted.map(b=>{
+  let t=getTermurah(b); let selisih=(b.eceran||0)-t.h; let rekom=t.h?Math.round(t.h+selisih*0.7):0;
+  return `<tr><td class="border p-1 font-bold">${b.nama}</td>`+sumbers.map(s=>{ let v=b.harga&&b.harga[s.id]? Number(b.harga[s.id]).toLocaleString():'-'; let cls=t.id==s.id?'bg-green-100 font-bold':''; return `<td class="border p-1 ${cls}">Rp ${v}</td>`; }).join('')+`<td class="border p-1 bg-yellow-100 font-bold">${t.nama} Rp ${t.h.toLocaleString()}</td><td class="border p-1">Rp ${(b.eceran||0).toLocaleString()}</td><td class="border p-1 text-green-700 font-bold">Rp ${selisih.toLocaleString()}</td><td class="border p-1 font-bold">Rp ${rekom.toLocaleString()}</td></tr>`;
  }).join('');
- document.querySelector('#tableRugi tbody').innerHTML=bottom5.map((b,i)=>{
-  let selisih=b.eceran-b.grosir;
-  return `<tr><td class="border p-2 text-center">${i+1}</td><td class="border p-2">${b.nama}</td><td class="border p-2">Rp ${selisih.toLocaleString()}</td><td class="border p-2">${selisih<1000?'Untung tipis sekali':'Modal tinggi'}</td></tr>`;
- }).join('');
-
- let avg=top10.length? top10.reduce((s,x)=>s+(x.eceran-x.grosir),0)/top10.length:0;
- document.getElementById('rekomText').innerText=`Fokus kulakan 10 barang paling cuan dulu. Rata-rata untung Rp ${Math.round(avg).toLocaleString()} per barang. Jual sedikit lebih murah dari warung Kasih (potong 30% selisih) biar warga Kasih pindah belanja ke Kopdes, tapi Kopdes tetap untung besar.`;
+ document.getElementById('rekomText').innerText=`Agen termurah paling sering: ${document.getElementById('agenTop').innerText}. Kulak campur di agen termurah masing-masing barang untuk margin maksimal.`;
 }
 
-window.editField=async(id, field, val)=>{ let v=field=='nama'?val:Number(val); await update(ref(db,'validasi_pasar_kertanegara_v2/barangs/'+id), {[field]:v}); }
-window.addBarang=async()=>{ let nama=prompt('Nama barang baru?'); if(!nama) return; await push(barangRef, {nama, grosir:0, eceran:0, created:Date.now()}); }
-window.hapusBarang=async(id)=>{ if(confirm('Hapus?')) await remove(ref(db,'validasi_pasar_kertanegara_v2/barangs/'+id)); }
-
-window.downloadPDF=async()=>{
- const { jsPDF } = window.jspdf;
- let doc=new jsPDF();
- let el=document.getElementById('laporanPreview');
- let canvas=await html2canvas(el, {scale:2});
- let imgData=canvas.toDataURL('image/png');
- let imgProps=doc.getImageProperties(imgData);
- let pdfWidth=doc.internal.pageSize.getWidth();
- let pdfHeight=(imgProps.height*pdfWidth)/imgProps.width;
- doc.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight);
- doc.save(`Laporan-Validasi-Pasar-Kertanegara-${new Date().toISOString().slice(0,10)}.pdf`);
+window.editHarga=async(barangId, sumberId, val)=>{
+ await update(ref(db,'validasi_pasar_v4_kertanegara/barangs/'+barangId+'/harga'), {[sumberId]: Number(val||0)});
 }
-window.downloadExcel=()=>{
- let sorted=[...barangs].sort((a,b)=>(b.eceran-b.grosir)-(a.eceran-a.grosir));
- let csv="No,Barang,Grosir Kertanegara,Warung Kasih,Selisih,Rekom Kopdes\n";
- sorted.forEach((b,i)=>{ let selisih=b.eceran-b.grosir; let rekom=Math.round(b.grosir+selisih*0.7); csv+=`${i+1},"${b.nama}",${b.grosir},${b.eceran},${selisih},${rekom}\n`; });
- let blob=new Blob([csv], {type:'text/csv'});
- let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Validasi-Pasar-Kertanegara.csv`; a.click();
-}
-window.downloadJPG=async()=>{
- let el=document.getElementById('laporanPreview');
- let canvas=await html2canvas(el, {scale:2});
- let a=document.createElement('a'); a.href=canvas.toDataURL('image/jpeg',0.9); a.download=`Laporan-Kertanegara-${Date.now()}.jpg`; a.click();
-}
+window.editBarangField=async(id, field, val)=>{ let v=field=='nama'?val:Number(val); await update(ref(db,'validasi_pasar_v4_kertanegara/barangs/'+id), {[field]:v}); }
+window.addBarang=async()=>{ let nama=prompt('Nama barang baru?'); if(!nama) return; await push(barangRef,{nama, eceran:0, harga:{}, created:Date.now()}); }
+window.hapusBarang=async(id)=>{ if(confirm('Hapus barang?')) await remove(ref(db,'validasi_pasar_v4_kertanegara/barangs/'+id)); }
+window.downloadPDF=async()=>{ const { jsPDF } = window.jspdf; let doc=new jsPDF('l','mm','a4'); let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2}); let imgData=canvas.toDataURL('image/png'); let w=doc.internal.pageSize.getWidth(); let h=(canvas.height*w)/canvas.width; doc.addImage(imgData,'PNG',0,0,w,h); doc.save('Laporan-Banyak-Sumber-Kertanegara.pdf'); }
+window.downloadExcel=()=>{ let csv="Barang,"+sumbers.map(s=>s.nama).join(',')+",Termurah,Warung Kasih,Untung,Rekom\n"; barangs.forEach(b=>{ let t=getTermurah(b); let selisih=(b.eceran||0)-t.h; let rekom=t.h?Math.round(t.h+selisih*0.7):0; csv+=`"${b.nama}",`+sumbers.map(s=> b.harga&&b.harga[s.id]? b.harga[s.id]:0).join(',')+`,${t.nama} ${t.h},${b.eceran},${selisih},${rekom}\n`; }); let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Validasi-Banyak-Sumber.csv'; a.click(); }
+window.downloadJPG=async()=>{ let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2}); let a=document.createElement('a'); a.href=canvas.toDataURL('image/jpeg',0.9); a.download='Laporan-Kertanegara.jpg'; a.click(); }
 </script>
 </body>
 </html>
