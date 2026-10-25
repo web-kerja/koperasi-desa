@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANALISIS UMKM V3 REALTIME - KDKMP KASIH</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>.input{border:1px solid #e2e8f0; border-radius:12px; padding:8px 12px; font-size:11px; width:100%} .label{font-size:9px; font-weight:800; color:#BE1E2D} .tab-active{background:#BE1E2D!important; color:white!important} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)}</style>
+</head>
+<body class="bg-[#f6f5f2] pb-24">
+<div class="bg-[#BE1E2D] text-white p-3 sticky top-0 z-50">
+<div class="max-w-[1700px] mx-auto flex justify-between items-center">
+<div><b class="text-[13px]">🏭 ANALISIS UMKM V3 - REALTIME KERTANEGARA</b><p class="text-[9px] opacity-80" id="fbStatus">Connecting kasih-kopdes...</p></div>
+<div class="flex gap-2"><button onclick="bandingkanSemua()" class="bg-yellow-400 text-black px-4 py-2 rounded-full text-[10px] font-black">⚖️ BANDINGKAN</button><button onclick="window.print()" class="bg-white text-[#BE1E2D] px-3 py-2 rounded-full text-[10px]">🖨️</button></div>
+</div>
+</div>
+
+<div class="max-w-[1700px] mx-auto p-3 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-3">
+<!-- FORM -->
+<div class="card p-4 h-fit sticky top-[60px] max-h-[90vh] overflow-auto">
+<div class="flex gap-2 mb-3">
+<button onclick="switchUMKM(0)" id="tab0" class="tab-active flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 1</button>
+<button onclick="switchUMKM(1)" id="tab1" class="flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 2</button>
+<button onclick="switchUMKM(2)" id="tab2" class="flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 3</button>
+</div>
+<div id="formContainer"></div>
+<button onclick="saveCurrent()" class="w-full mt-3 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">💾 SIMPAN KE FIREBASE - UMKM <span id="saveNum">1</span></button>
+<div class="mt-3 bg-slate-50 p-3 rounded-xl text-[10px]"><b>Data Realtime (kasih-kopdes):</b><div id="savedList" class="mt-2 space-y-1"></div></div>
+</div>
+
+<!-- HASIL -->
+<div class="space-y-3">
+<div id="singleResult" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div class="card p-4"><h3 class="font-bold text-[11px]">📊 Perbandingan 3 UMKM</h3><canvas id="compareChart" height="250"></canvas></div>
+<div class="card p-4"><h3 class="font-bold text-[11px]">🏆 Ranking & Rekomendasi</h3><div id="ranking" class="mt-3 space-y-2"></div><div id="rekomBanding" class="mt-4 bg-green-50 border border-green-200 p-3 rounded-xl text-[11px]"></div></div>
+</div>
+<div class="card p-4">
+<h3 class="font-bold text-[11px]">📋 Tabel Perbandingan Lengkap</h3>
+<div class="overflow-auto mt-3"><table class="w-full text-[10px] border"><thead class="bg-[#BE1E2D] text-white"><tr><th class="p-2 text-left">Aspek</th><th class="p-2" id="th0">UMKM 1</th><th class="p-2" id="th1">UMKM 2</th><th class="p-2" id="th2">UMKM 3</th><th class="p-2">Terbaik</th></tr></thead><tbody id="tbodyBanding"></tbody></table></div>
+</div>
+<div id="laporanFinal" class="card p-5 border-t-4 border-[#BE1E2D] text-[11px] leading-relaxed"></div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
+  authDomain: "kasih-kopdes.firebaseapp.com",
+  databaseURL: "https://kasih-kopdes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kasih-kopdes",
+  storageBucket: "kasih-kopdes.firebasestorage.app",
+  messagingSenderId: "746954171317",
+  appId: "1:746954171317:web:c603cc408212a50ece2ffc",
+  measurementId: "G-ERLHDFQL4K"
+};
+
+const appFB = initializeApp(firebaseConfig);
+const db = getDatabase(appFB);
+document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes - umkm_kertanegara_v3 realtime';
+
+let currentIdx=0;
+let umkms=[null,null,null];
+let compareChart=null;
+
+const dbRef=ref(db,'umkm_kertanegara_v3/data');
+
+onValue(dbRef, snap=>{
+ let data=snap.val();
+ if(data){
+  umkms=[data.umkm1||null, data.umkm2||null, data.umkm3||null];
+ }else{
+  umkms=[null,null,null];
+ }
+ renderSaved();
+ renderCurrentForm();
+ if(umkms[currentIdx]) renderSingle(currentIdx);
+ if(umkms.filter(x=>x).length>=2) bandingkanSemua();
+});
+
+function getFormHTML(idx){
+ let d=umkms[idx]||{nama:'', jenis:'Makanan', lama:'2', prod_now:'', prod_max:'', alat:'', jam:'', sdm:'2', skill:'3', modal:'', omzet:'', catat:'3', bahan:'5', pelanggan:'', online:'3', nib:'3', lokasi:'3'};
+ return `
+ <div class="space-y-3">
+ <div><p class="label">Nama UMKM</p><input id="nama" class="input font-bold" placeholder="Bu Siti - Keripik" value="${d.nama}"></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis</p><select id="jenis" class="input"><option ${d.jenis=='Makanan'?'selected':''}>Makanan</option><option ${d.jenis=='Minuman'?'selected':''}>Minuman</option><option ${d.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${d.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option></select></div><div><p class="label">Lama Usaha</p><select id="lama" class="input"><option value="1" ${d.lama=='1'?'selected':''}><1 th</option><option value="2" ${d.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${d.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${d.lama=='5'?'selected':''}>>5 th</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang/hari</p><input id="prod_now" type="number" class="input" value="${d.prod_now}" placeholder="100"></div><div><p class="label">Kapasitas Maks/hari</p><input id="prod_max" type="number" class="input" value="${d.prod_max}" placeholder="200"></div><div><p class="label">Jml Alat</p><input id="alat" type="number" class="input" value="${d.alat}" placeholder="2"></div><div><p class="label">Jam Kerja</p><input id="jam" type="number" class="input" value="${d.jam}" placeholder="8"></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Tenaga Kerja</p><input id="sdm" type="number" class="input" value="${d.sdm}"></div><div><p class="label">Skill 1-5</p><select id="skill" class="input"><option value="2" ${d.skill=='2'?'selected':''}>2-Dasar</option><option value="3" ${d.skill=='3'?'selected':''}>3-Cukup</option><option value="4" ${d.skill=='4'?'selected':''}>4-Mahir</option><option value="5" ${d.skill=='5'?'selected':''}>5-Ahli</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Modal jt/bln</p><input id="modal" type="number" class="input" value="${d.modal}" placeholder="10"></div><div><p class="label">Omzet jt/bln</p><input id="omzet" type="number" class="input" value="${d.omzet}" placeholder="15"></div><div><p class="label">Catat Keuangan</p><select id="catat" class="input"><option value="1" ${d.catat=='1'?'selected':''}>Tidak</option><option value="3" ${d.catat=='3'?'selected':''}>Seadanya</option><option value="5" ${d.catat=='5'?'selected':''}>Rapi</option></select></div><div><p class="label">Bahan Baku</p><select id="bahan" class="input"><option value="1" ${d.bahan=='1'?'selected':''}>Sulit</option><option value="3" ${d.bahan=='3'?'selected':''}>Musiman</option><option value="5" ${d.bahan=='5'?'selected':''}>Mudah</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Pelanggan Tetap</p><input id="pelanggan" type="number" class="input" value="${d.pelanggan}" placeholder="20"></div><div><p class="label">Online</p><select id="online" class="input"><option value="1" ${d.online=='1'?'selected':''}>Tidak</option><option value="3" ${d.online=='3'?'selected':''}>WA</option><option value="5" ${d.online=='5'?'selected':''}>Marketplace</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Legalitas</p><select id="nib" class="input"><option value="1" ${d.nib=='1'?'selected':''}>Belum NIB</option><option value="3" ${d.nib=='3'?'selected':''}>NIB</option><option value="5" ${d.nib=='5'?'selected':''}>NIB+PIRT+Halal</option></select></div><div><p class="label">Tempat</p><select id="lokasi" class="input"><option value="3" ${d.lokasi=='3'?'selected':''}>Rumahan</option><option value="5" ${d.lokasi=='5'?'selected':''}>Tetap</option></select></div></div>
+ </div>`;
+}
+
+function renderCurrentForm(){
+ document.querySelectorAll('[id^=tab]').forEach((b,i)=>{b.className=i==currentIdx?'tab-active flex-1 py-2 rounded-full text-[10px] font-bold border':'flex-1 py-2 rounded-full text-[10px] font-bold border bg-white'});
+ document.getElementById('formContainer').innerHTML=getFormHTML(currentIdx);
+ document.getElementById('saveNum').innerText=currentIdx+1;
+}
+
+window.switchUMKM=(idx)=>{ currentIdx=idx; renderCurrentForm(); if(umkms[idx]) renderSingle(idx); }
+window.saveCurrent=async()=>{
+ let d={nama:document.getElementById('nama').value, jenis:document.getElementById('jenis').value, lama:document.getElementById('lama').value, prod_now:document.getElementById('prod_now').value, prod_max:document.getElementById('prod_max').value, alat:document.getElementById('alat').value, jam:document.getElementById('jam').value, sdm:document.getElementById('sdm').value, skill:document.getElementById('skill').value, modal:document.getElementById('modal').value, omzet:document.getElementById('omzet').value, catat:document.getElementById('catat').value, bahan:document.getElementById('bahan').value, pelanggan:document.getElementById('pelanggan').value, online:document.getElementById('online').value, nib:document.getElementById('nib').value, lokasi:document.getElementById('lokasi').value, updated:Date.now()};
+ if(!d.nama) return alert('Isi nama UMKM dulu');
+ let key=currentIdx==0?'umkm1':currentIdx==1?'umkm2':'umkm3';
+ await update(dbRef, {[key]:d});
+ alert('✅ Tersimpan realtime ke Firebase: '+d.nama);
+}
+
+function renderSaved(){
+ document.getElementById('savedList').innerHTML=umkms.map((u,i)=>u?`<div class="flex justify-between bg-white border p-2 rounded-xl"><span>${i+1}. ${u.nama} - ${calcScore(u).total}/100</span><button onclick="switchUMKM(${i})" class="text-[#BE1E2D] font-bold">Edit</button></div>`:`<div class="text-slate-400 p-1">${i+1}. Kosong - belum input</div>`).join('');
+ umkms.forEach((u,i)=>{ if(u) document.getElementById('th'+i).innerText=u.nama.substring(0,15); else document.getElementById('th'+i).innerText='UMKM '+(i+1); });
+}
+
+function calcScore(d){
+ if(!d) return null;
+ let now=parseFloat(d.prod_now)||0; let max=parseFloat(d.prod_max)||1; let alat=parseFloat(d.alat)||0; let jam=parseFloat(d.jam)||0; let sdm=parseFloat(d.sdm)||0; let skill=parseFloat(d.skill)||0; let modal=parseFloat(d.modal)||0; let omzet=parseFloat(d.omzet)||0; let catat=parseFloat(d.catat)||0; let bahan=parseFloat(d.bahan)||0; let pelanggan=parseFloat(d.pelanggan)||0; let online=parseFloat(d.online)||0; let nib=parseFloat(d.nib)||0; let lama=parseFloat(d.lama)||0;
+ let utilisasi=Math.min(100, Math.round(now/max*100));
+ let sProd=Math.min(20, (now/max*10)+(alat*2)+(jam/8*5));
+ let sSDM=Math.min(20, Math.min(sdm,5)*2 + skill*2 + lama);
+ let sModal=Math.min(20, (omzet>0?Math.min(10,omzet/modal*5):0)+catat+bahan);
+ let sPasar=Math.min(20, Math.min(10,pelanggan/10*5)+online+5);
+ let sLegal=Math.min(20, nib*2+lama+5);
+ let total=Math.round(sProd+sSDM+sModal+sPasar+sLegal);
+ let potensi=(max-now)*(omzet>0&&now>0?(omzet*1000000/now):50000);
+ return {total, utilisasi, sProd, sSDM, sModal, sPasar, sLegal, potensi, now, max, nama:d.nama};
+}
+
+function renderSingle(idx){
+ let s=calcScore(umkms[idx]); if(!s) return;
+ document.getElementById('singleResult').innerHTML=`<div class="card p-4 border-l-4 border-blue-600"><p class="label">UMKM ${idx+1} - ${s.nama}</p><b class="text-[26px]">${s.total}/100</b><p class="text-[10px] mt-1">${s.total>=80?'✅ LAYAK MITRA UTAMA':s.total>=60?'⚠️ CUKUP':'❌ BELUM'}</p></div><div class="card p-4 border-l-4 border-green-600"><p class="label">Utilisasi</p><b class="text-[26px]">${s.utilisasi}%</b><p class="text-[10px]">${s.now}/${s.max} per hari</p></div><div class="card p-4 border-l-4 border-orange-600"><p class="label">Potensi Tambahan</p><b class="text-[16px]">Rp ${Math.round(s.potensi).toLocaleString()}</b></div>`;
+}
+
+window.bandingkanSemua=()=>{
+ let data=umkms.map(calcScore).filter(x=>x); if(data.length==0) return alert('Simpan minimal 1 UMKM di Firebase dulu');
+ if(data.length==1){ renderSingle(0); return; }
+ data.sort((a,b)=>b.total-a.total);
+ document.getElementById('ranking').innerHTML=data.map((d,i)=>`<div class="flex justify-between items-center border p-2 rounded-xl ${i==0?'bg-green-50 border-green-300':''}"><div><b class="text-[11px]">${i==0?'🏆':i==1?'🥈':'🥉'} #${i+1} ${d.nama}</b><p class="text-[9px]">${d.total}/100 | Util ${d.utilisasi}%</p></div><span class="font-black text-[14px]">${d.total}</span></div>`).join('');
+ if(compareChart) compareChart.destroy();
+ compareChart=new Chart(document.getElementById('compareChart'), {type:'bar', data:{labels:['Produksi','SDM','Modal','Pasar','Legal','TOTAL'], datasets:data.map((d,idx)=>({label:d.nama, data:[d.sProd, d.sSDM, d.sModal, d.sPasar, d.sLegal, d.total], backgroundColor:['#2563eb','#a855f7','#16a34a'][idx]}))}, options:{responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:9}}}}, scales:{y:{min:0, max:100}}}});
+ let aspek=[['Produksi','sProd'],['SDM','sSDM'],['Modal','sModal'],['Pasar','sPasar'],['Legal','sLegal'],['TOTAL','total']];
+ document.getElementById('tbodyBanding').innerHTML=aspek.map(([label,key])=>{
+  let vals=data.map(d=>d[key]); let maxVal=Math.max(...vals);
+  return `<tr class="border-b ${label=='TOTAL'?'font-bold bg-yellow-50':''}"><td class="p-2">${label}</td>${[0,1,2].map(i=>{let d=umkms[i]?calcScore(umkms[i]):null; return `<td class="p-2 text-center ${d&&d[key]==maxVal?'bg-green-100 font-bold':''}">${d?Math.round(d[key]):'-'}</td>`}).join('')}<td class="p-2 text-center font-bold text-green-700">${Math.round(maxVal)}</td></tr>`;
+ }).join('');
+ let terbaik=data[0];
+ document.getElementById('rekomBanding').innerHTML=`<b>KEPUTUSAN:</b> ${terbaik.nama} paling kuat (skor ${terbaik.total}/100). Jadikan Mitra Utama. Estimasi tambahan omzet: Rp ${Math.round(data.reduce((s,d)=>s+d.potensi,0)).toLocaleString()}/bln`;
+ document.getElementById('laporanFinal').innerHTML=`<h3 class="font-black text-[#BE1E2D]">📑 LAPORAN REALTIME - ${new Date().toLocaleDateString('id-ID')} - Firebase kasih-kopdes</h3><br>Ranking:<br>${data.map((d,i)=>`${i+1}. ${d.nama} - ${d.total}/100`).join('<br>')}<br><br>Rekomendasi: ${terbaik.nama} sebagai mitra utama. Data tersimpan realtime di Firebase, bisa dibuka pengurus lain langsung.`;
+}
+
+renderCurrentForm();
+</script>
+</body>
+</html>
