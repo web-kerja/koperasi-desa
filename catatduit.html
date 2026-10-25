@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATATDUIT - Keuangan Pribadi KDKMP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>.input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 14px; font-size:12px; width:100%} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .label{font-size:9px; font-weight:800; color:#BE1E2D; text-transform:uppercase}</style>
+</head>
+<body class="bg-[#f8fafc]">
+<div class="bg-[#BE1E2D] text-white p-4 sticky top-0 z-50 flex justify-between items-center">
+<div><b class="text-[14px]">💰 CATATDUIT - Multi Dompet</b><p class="text-[10px] opacity-80" id="firebaseStatus">Connecting Firebase...</p></div>
+<button onclick="openAdd()" class="bg-white text-[#BE1E2D] px-5 py-2 rounded-full text-[11px] font-black">+ TRANSAKSI</button>
+</div>
+
+<div class="max-w-[1400px] mx-auto p-3 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-3">
+<!-- LEFT -->
+<div class="space-y-3">
+<div class="card p-4">
+<div class="flex justify-between items-center"><h2 class="font-black text-[11px]">👛 DOMPETKU (banyak 0 gpp)</h2><button onclick="addDompet()" class="text-[10px] bg-slate-100 px-3 py-1 rounded-full">+ Dompet</button></div>
+<div id="listDompet" class="mt-3 space-y-2"></div>
+<div class="mt-4 bg-slate-900 text-white p-3 rounded-xl flex justify-between"><div><p class="text-[9px] opacity-60">TOTAL SEMUA SALDO</p><b id="totalSaldo" class="text-[18px]">Rp 0</b></div><div class="text-right"><p class="text-[9px] opacity-60">Sisa Bulan Ini</p><b id="sisaBulan" class="text-[12px]">Rp 0</b></div></div>
+</div>
+
+<div class="card p-4">
+<h2 class="font-black text-[11px]">🎛️ PILIH ANALISIS YANG DIBUTUHKIN</h2>
+<p class="text-[9px] text-slate-500 mt-1">Centang yang mau dilihat aja</p>
+<div class="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" checked onchange="toggleAnalisis()" value="cashflow" class="analisisCheck"> Cashflow</label>
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" checked onchange="toggleAnalisis()" value="kategori" class="analisisCheck"> Kategori</label>
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" checked onchange="toggleAnalisis()" value="tren" class="analisisCheck"> Tren Bulanan</label>
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" onchange="toggleAnalisis()" value="dompet" class="analisisCheck"> Per Dompet</label>
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" onchange="toggleAnalisis()" value="top" class="analisisCheck"> Top Pengeluaran</label>
+<label class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl"><input type="checkbox" onchange="toggleAnalisis()" value="harian" class="analisisCheck"> Harian</label>
+</div>
+</div>
+
+<div class="card p-4 max-h-[400px] overflow-auto">
+<h2 class="font-black text-[11px]">📜 Transaksi Terakhir</h2>
+<div id="listTransaksi" class="mt-3 space-y-2"></div>
+</div>
+</div>
+
+<!-- RIGHT - ANALISIS -->
+<div class="space-y-3">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="card p-3 border-l-4 border-green-600"><p class="label">Pemasukan Bulan Ini</p><b id="inMonth" class="text-[16px]">Rp 0</b></div>
+<div class="card p-3 border-l-4 border-red-600"><p class="label">Pengeluaran Bulan Ini</p><b id="outMonth" class="text-[16px]">Rp 0</b></div>
+<div class="card p-3 border-l-4 border-blue-600"><p class="label">Paling Boros Kategori</p><b id="borosKat" class="text-[12px]">-</b></div>
+<div class="card p-3 border-l-4 border-orange-600"><p class="label">Dompet Paling Aktif</p><b id="aktifDompet" class="text-[12px]">-</b></div>
+</div>
+
+<div id="box-cashflow" class="card p-4"><h3 class="font-bold text-[11px]">💸 Cashflow Bulan Ini</h3><canvas id="cashflowChart" height="120"></canvas></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div id="box-kategori" class="card p-4"><h3 class="font-bold text-[11px]">🍕 Pengeluaran per Kategori</h3><canvas id="kategoriChart" height="200"></canvas></div>
+<div id="box-dompet" class="card p-4 hidden"><h3 class="font-bold text-[11px]">👛 Saldo per Dompet</h3><canvas id="dompetChart" height="200"></canvas></div>
+<div id="box-tren" class="card p-4"><h3 class="font-bold text-[11px]">📈 Tren 6 Bulan</h3><canvas id="trenChart" height="200"></canvas></div>
+<div id="box-top" class="card p-4 hidden"><h3 class="font-bold text-[11px]">🔥 Top 5 Pengeluaran Terbesar</h3><div id="topList" class="mt-3 space-y-2 text-[11px]"></div></div>
+<div id="box-harian" class="card p-4 hidden"><h3 class="font-bold text-[11px]">📅 Pengeluaran Harian Bulan Ini</h3><canvas id="harianChart" height="200"></canvas></div>
+</div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-end md:items-center justify-center p-3">
+<div class="bg-white rounded-[24px] w-full max-w-[420px] p-5">
+<h2 class="font-black text-[14px]">Tambah Transaksi</h2>
+<div class="mt-4 space-y-3">
+<div class="grid grid-cols-3 gap-2"><button onclick="setTipe('keluar')" id="btnKeluar" class="bg-[#BE1E2D] text-white py-2 rounded-full text-[11px] font-bold">Keluar</button><button onclick="setTipe('masuk')" id="btnMasuk" class="bg-slate-100 py-2 rounded-full text-[11px]">Masuk</button><button onclick="setTipe('pindah')" id="btnPindah" class="bg-slate-100 py-2 rounded-full text-[11px]">Pindah</button></div>
+<div><p class="label">Jumlah</p><input id="jml" type="number" class="input text-[18px] font-black" placeholder="50000"></div>
+<div class="grid grid-cols-2 gap-2"><div><p class="label">Dompet</p><select id="dompetSelect" class="input"></select></div><div id="dompetTujuanWrap" class="hidden"><p class="label">Ke Dompet</p><select id="dompetTujuan" class="input"></select></div></div>
+<div><p class="label">Kategori</p><select id="kategori" class="input"><option>Makan</option><option>Transport</option><option>Pulsa/Internet</option><option>Belanja Toko</option><option>Kopdes / Kerjaan</option><option>Tagihan</option><option>Transfer Keluarga</option><option>Gaji / Pemasukan</option><option>Lainnya</option></select></div>
+<div><p class="label">Catatan</p><input id="catatan" class="input" placeholder="Beli bensin, atau gajian kopdes"></div>
+<div><p class="label">Tanggal</p><input id="tgl" type="date" class="input"></div>
+<button onclick="saveTransaksi()" class="w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black mt-2">💾 SIMPAN KE FIREBASE</button>
+<button onclick="closeModal()" class="w-full bg-slate-100 py-2 rounded-full text-[11px] mt-2">Batal</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyA93AVYbEp3ocRCQEtrh0v7_9I5cpJKHiI",
+ authDomain: "catatduit-55060.firebaseapp.com",
+ projectId: "catatduit-55060",
+ storageBucket: "catatduit-55060.firebasestorage.app",
+ messagingSenderId: "1025155283832",
+ appId: "1:1025155283832:web:ee5b46a39942357700e68d",
+ measurementId: "G-VLSJV0981B"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+document.getElementById('firebaseStatus').innerText='✅ Firebase Connected: catatduit-55060';
+
+let tipe='keluar';
+let dompets=[]; let transaksis=[];
+let charts={};
+
+// Load dompet
+onSnapshot(collection(db, "dompets"), (snap)=>{
+ dompets=[]; snap.forEach(d=>dompets.push({id:d.id, ...d.data()}));
+ if(dompets.length==0){
+  // buat default banyak 0
+  const defaults=[{nama:'DANA', tipe:'E-Wallet', saldo:0},{nama:'OVO', tipe:'E-Wallet', saldo:0},{nama:'GoPay', tipe:'E-Wallet', saldo:0},{nama:'ShopeePay', tipe:'E-Wallet', saldo:0},{nama:'BCA', tipe:'Bank', saldo:0},{nama:'BRI', tipe:'Bank', saldo:0},{nama:'Cash', tipe:'Cash', saldo:0}];
+  defaults.forEach(async d=>{ await addDoc(collection(db,"dompets"), d); });
+ }
+ renderDompet();
+});
+
+onSnapshot(query(collection(db,"transaksis"), orderBy("created","desc")), (snap)=>{
+ transaksis=[]; snap.forEach(d=>transaksis.push({id:d.id, ...d.data()}));
+ renderAll();
+});
+
+window.renderDompet=()=>{
+ let html=dompets.map(d=>`<div class="flex justify-between items-center border p-2 rounded-xl ${d.saldo==0?'bg-slate-50 opacity-70':''}"><div><p class="font-bold text-[11px]">${d.nama} <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded-full">${d.tipe}</span></p><p class="text-[10px] ${d.saldo==0?'text-slate-400':d.saldo<0?'text-red-600':'text-green-600'}">Rp ${Number(d.saldo).toLocaleString('id-ID')}</p></div><button onclick="hapusDompet('${d.id}')" class="text-[10px]">🗑️</button></div>`).join('');
+ document.getElementById('listDompet').innerHTML=html||'Loading dompet...';
+ document.getElementById('dompetSelect').innerHTML=dompets.map(d=>`<option value="${d.id}">${d.nama} (Rp ${d.saldo})</option>`).join('');
+ document.getElementById('dompetTujuan').innerHTML=document.getElementById('dompetSelect').innerHTML;
+}
+
+window.renderAll=()=>{
+ // Hitung saldo sudah di dompet (karena update saldo)
+ let total=dompets.reduce((s,d)=>s+Number(d.saldo||0),0);
+ document.getElementById('totalSaldo').innerText='Rp '+total.toLocaleString('id-ID');
+ // Bulan ini
+ let now=new Date(); let bln=now.getMonth(); let thn=now.getFullYear();
+ let inM=0,outM=0;
+ transaksis.forEach(t=>{ let dt=new Date(t.tgl); if(dt.getMonth()==bln && dt.getFullYear()==thn){ if(t.tipe=='masuk') inM+=Number(t.jml); if(t.tipe=='keluar') outM+=Number(t.jml); } });
+ document.getElementById('inMonth').innerText='Rp '+inM.toLocaleString('id-ID');
+ document.getElementById('outMonth').innerText='Rp '+outM.toLocaleString('id-ID');
+ document.getElementById('sisaBulan').innerText='Rp '+(inM-outM).toLocaleString('id-ID');
+
+ // List transaksi
+ document.getElementById('listTransaksi').innerHTML=transaksis.slice(0,20).map(t=>`<div class="flex justify-between border-b py-2"><div><p class="font-bold text-[11px]">${t.tipe=='masuk'?'🟢':t.tipe=='keluar'?'🔴':'🔵'} ${t.kategori} - Rp ${Number(t.jml).toLocaleString()}</p><p class="text-[9px] text-slate-500">${t.catatan} • ${t.dompetNama} ${t.tipe=='pindah'?'→ '+t.tujuanNama:''} • ${t.tgl}</p></div><button onclick="hapusTransaksi('${t.id}', '${t.dompetId}', '${t.tujuanId||''}', ${t.jml}, '${t.tipe}')" class="text-[10px]">✖️</button></div>`).join('')||'<p class="text-[10px] text-slate-400">Belum ada transaksi</p>';
+
+ // Kategori
+ let kat={}; transaksis.forEach(t=>{ if(t.tipe=='keluar'){ kat[t.kategori]=(kat[t.kategori]||0)+Number(t.jml); } });
+ let katKeys=Object.keys(kat); let katVals=Object.values(kat);
+ document.getElementById('borosKat').innerText= katKeys.length? katKeys[katVals.indexOf(Math.max(...katVals))]:'-';
+ 
+ if(charts.kat) charts.kat.destroy();
+ charts.kat=new Chart(document.getElementById('kategoriChart'), {type:'doughnut', data:{labels:katKeys, datasets:[{data:katVals, backgroundColor:['#BE1E2D','#2563eb','#16a34a','#f59e0b','#8b5cf6','#ec4899']}]}, options:{plugins:{legend:{position:'bottom', labels:{font:{size:9}}}}}});
+
+ // Cashflow
+ let daysInMonth=new Date(thn, bln+1, 0).getDate(); let harianIn=Array(daysInMonth).fill(0); let harianOut=Array(daysInMonth).fill(0);
+ transaksis.forEach(t=>{ let dt=new Date(t.tgl); if(dt.getMonth()==bln && dt.getFullYear()==thn){ let idx=dt.getDate()-1; if(t.tipe=='masuk') harianIn[idx]+=Number(t.jml); if(t.tipe=='keluar') harianOut[idx]+=Number(t.jml); } });
+ if(charts.cash) charts.cash.destroy();
+ charts.cash=new Chart(document.getElementById('cashflowChart'), {type:'bar', data:{labels:Array.from({length:daysInMonth},(_,i)=>i+1), datasets:[{label:'Masuk', data:harianIn, backgroundColor:'#16a34a'}, {label:'Keluar', data:harianOut, backgroundColor:'#BE1E2D'}]}, options:{scales:{x:{stacked:false}}, plugins:{legend:{labels:{font:{size:9}}}}}});
+
+ // Tren 6 bulan
+ let bulanLabels=[]; let trenIn=[]; let trenOut=[];
+ for(let i=5;i>=0;i--){ let d=new Date(thn, bln-i, 1); bulanLabels.push(d.toLocaleString('id-ID',{month:'short'})); let m=d.getMonth(); let y=d.getFullYear(); let im=0,om=0; transaksis.forEach(t=>{ let dt=new Date(t.tgl); if(dt.getMonth()==m && dt.getFullYear()==y){ if(t.tipe=='masuk') im+=Number(t.jml); if(t.tipe=='keluar') om+=Number(t.jml);} }); trenIn.push(im); trenOut.push(om); }
+ if(charts.tren) charts.tren.destroy();
+ charts.tren=new Chart(document.getElementById('trenChart'), {type:'line', data:{labels:bulanLabels, datasets:[{label:'Masuk', data:trenIn, borderColor:'#16a34a', tension:.4}, {label:'Keluar', data:trenOut, borderColor:'#BE1E2D', tension:.4}]}, options:{plugins:{legend:{labels:{font:{size:9}}}}}});
+
+ // Dompet chart
+ if(charts.dompet) charts.dompet.destroy();
+ charts.dompet=new Chart(document.getElementById('dompetChart'), {type:'bar', data:{labels:dompets.map(d=>d.nama), datasets:[{label:'Saldo', data:dompets.map(d=>d.saldo), backgroundColor:dompets.map(d=>d.saldo==0?'#e2e8f0':'#BE1E2D')}]}, options:{plugins:{legend:{display:false}}}});
+
+ // Top
+ let top=[...transaksis].filter(t=>t.tipe=='keluar').sort((a,b)=>b.jml-a.jml).slice(0,5);
+ document.getElementById('topList').innerHTML=top.map(t=>`<div class="flex justify-between bg-slate-50 p-2 rounded-xl"><span>${t.kategori} - ${t.catatan}</span><b>Rp ${Number(t.jml).toLocaleString()}</b></div>`).join('')||'Belum ada';
+
+ // Harian chart
+ if(charts.harian) charts.harian.destroy();
+ charts.harian=new Chart(document.getElementById('harianChart'), {type:'line', data:{labels:Array.from({length:daysInMonth},(_,i)=>i+1), datasets:[{label:'Keluar Harian', data:harianOut, borderColor:'#BE1E2D', backgroundColor:'rgba(190,30,45,.1)', fill:true, tension:.3}]}, options:{plugins:{legend:{display:false}}}});
+
+ // aktif dompet
+ let aktifCount={}; transaksis.forEach(t=>{ aktifCount[t.dompetNama]=(aktifCount[t.dompetNama]||0)+1; }); let aktifKeys=Object.keys(aktifCount); document.getElementById('aktifDompet').innerText= aktifKeys.length? aktifKeys.sort((a,b)=>aktifCount[b]-aktifCount[a])[0]:'-';
+}
+
+window.toggleAnalisis=()=>{
+ document.querySelectorAll('.analisisCheck').forEach(c=>{
+  let box=document.getElementById('box-'+c.value); if(box){ if(c.checked) box.classList.remove('hidden'); else box.classList.add('hidden'); }
+ });
+}
+
+window.openAdd=()=>{ document.getElementById('modal').classList.remove('hidden'); document.getElementById('tgl').value=new Date().toISOString().slice(0,10); }
+window.closeModal=()=>document.getElementById('modal').classList.add('hidden');
+window.setTipe=(t)=>{
+ tipe=t;
+ document.getElementById('btnKeluar').className=t=='keluar'?'bg-[#BE1E2D] text-white py-2 rounded-full text-[11px] font-bold':'bg-slate-100 py-2 rounded-full text-[11px]';
+ document.getElementById('btnMasuk').className=t=='masuk'?'bg-green-600 text-white py-2 rounded-full text-[11px] font-bold':'bg-slate-100 py-2 rounded-full text-[11px]';
+ document.getElementById('btnPindah').className=t=='pindah'?'bg-blue-600 text-white py-2 rounded-full text-[11px] font-bold':'bg-slate-100 py-2 rounded-full text-[11px]';
+ document.getElementById('dompetTujuanWrap').classList.toggle('hidden', t!='pindah');
+}
+
+window.addDompet=async()=>{
+ let nama=prompt('Nama dompet? Contoh: DANA, BCA, Cash'); if(!nama) return;
+ let tipeDompet=prompt('Tipe? E-Wallet / Bank / Cash','E-Wallet')||'E-Wallet';
+ await addDoc(collection(db,"dompets"), {nama, tipe:tipeDompet, saldo:0});
+}
+
+window.saveTransaksi=async()=>{
+ let jml=Number(document.getElementById('jml').value); if(!jml) return alert('Isi jumlah');
+ let dompetId=document.getElementById('dompetSelect').value; let dompet=dompets.find(d=>d.id==dompetId); if(!dompet) return alert('Pilih dompet');
+ let tujuanId=document.getElementById('dompetTujuan').value; let tujuan=dompets.find(d=>d.id==tujuanId);
+ let kategori=document.getElementById('kategori').value; let catatan=document.getElementById('catatan').value; let tgl=document.getElementById('tgl').value;
+
+ // update saldo dompet
+ try{
+  if(tipe=='keluar'){ await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)-jml}, {merge:true}); }
+  if(tipe=='masuk'){ await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)+jml}, {merge:true}); }
+  if(tipe=='pindah'){ await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)-jml}, {merge:true}); await setDoc(doc(db,"dompets",tujuanId), {...tujuan, saldo:Number(tujuan.saldo)+jml}, {merge:true}); }
+
+  await addDoc(collection(db,"transaksis"), {
+   jml, tipe, dompetId, dompetNama:dompet.nama, tujuanId:tujuanId||null, tujuanNama:tujuan?.nama||null,
+   kategori, catatan, tgl, created:Date.now()
+  });
+  closeModal(); document.getElementById('jml').value=''; document.getElementById('catatan').value='';
+ }catch(e){ alert('Error Firebase: '+e.message); }
+}
+
+window.hapusTransaksi=async(id, dompetId, tujuanId, jml, tipeTrans)=>{
+ if(!confirm('Hapus transaksi ini? Saldo akan dikembalikan')) return;
+ let dompet=dompets.find(d=>d.id==dompetId); let tujuan=dompets.find(d=>d.id==tujuanId);
+ if(tipeTrans=='keluar') await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)+Number(jml)}, {merge:true});
+ if(tipeTrans=='masuk') await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)-Number(jml)}, {merge:true});
+ if(tipeTrans=='pindah'){ await setDoc(doc(db,"dompets",dompetId), {...dompet, saldo:Number(dompet.saldo)+Number(jml)}, {merge:true}); await setDoc(doc(db,"dompets",tujuanId), {...tujuan, saldo:Number(tujuan.saldo)-Number(jml)}, {merge:true}); }
+ await deleteDoc(doc(db,"transaksis", id));
+}
+window.hapusDompet=async(id)=>{ if(confirm('Hapus dompet ini?')) await deleteDoc(doc(db,"dompets", id)); }
+
+document.getElementById('tgl').value=new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
