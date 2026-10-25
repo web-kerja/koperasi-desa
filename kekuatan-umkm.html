@@ -2,50 +2,87 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANALISIS UMKM V3 REALTIME - KDKMP KASIH</title>
+<title>UMKM V4 UNLIMITED - KERTANEGARA REALTIME</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>.input{border:1px solid #e2e8f0; border-radius:12px; padding:8px 12px; font-size:11px; width:100%} .label{font-size:9px; font-weight:800; color:#BE1E2D} .tab-active{background:#BE1E2D!important; color:white!important} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>.input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; font-size:11px; width:100%; background:white} .label{font-size:8px; font-weight:800; color:#BE1E2D; text-transform:uppercase} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)}</style>
 </head>
 <body class="bg-[#f6f5f2] pb-24">
 <div class="bg-[#BE1E2D] text-white p-3 sticky top-0 z-50">
-<div class="max-w-[1700px] mx-auto flex justify-between items-center">
-<div><b class="text-[13px]">🏭 ANALISIS UMKM V3 - REALTIME KERTANEGARA</b><p class="text-[9px] opacity-80" id="fbStatus">Connecting kasih-kopdes...</p></div>
-<div class="flex gap-2"><button onclick="bandingkanSemua()" class="bg-yellow-400 text-black px-4 py-2 rounded-full text-[10px] font-black">⚖️ BANDINGKAN</button><button onclick="window.print()" class="bg-white text-[#BE1E2D] px-3 py-2 rounded-full text-[10px]">🖨️</button></div>
+<div class="max-w-[1800px] mx-auto flex justify-between items-center flex-wrap gap-2">
+<div><b class="text-[13px]">🏭 UMKM V4 UNLIMITED - KERTANEGARA</b><p class="text-[9px] opacity-80" id="fbStatus">Firebase kasih-kopdes realtime</p></div>
+<div class="flex gap-2"><button onclick="openModal()" class="bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[10px] font-black">+ Tambah UMKM</button><button onclick="setTab('arsip')" class="bg-black px-4 py-2 rounded-full text-[10px]">📚 Arsip</button><button onclick="setTab('banding')" class="bg-yellow-400 text-black px-4 py-2 rounded-full text-[10px] font-black">⚖️ Banding (<span id="countBanding">0</span>)</button><button onclick="setTab('laporan')" class="bg-green-600 text-white px-4 py-2 rounded-full text-[10px]">📄 Laporan</button></div>
 </div>
 </div>
 
-<div class="max-w-[1700px] mx-auto p-3 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-3">
-<!-- FORM -->
-<div class="card p-4 h-fit sticky top-[60px] max-h-[90vh] overflow-auto">
-<div class="flex gap-2 mb-3">
-<button onclick="switchUMKM(0)" id="tab0" class="tab-active flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 1</button>
-<button onclick="switchUMKM(1)" id="tab1" class="flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 2</button>
-<button onclick="switchUMKM(2)" id="tab2" class="flex-1 py-2 rounded-full text-[10px] font-bold border">UMKM 3</button>
-</div>
-<div id="formContainer"></div>
-<button onclick="saveCurrent()" class="w-full mt-3 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">💾 SIMPAN KE FIREBASE - UMKM <span id="saveNum">1</span></button>
-<div class="mt-3 bg-slate-50 p-3 rounded-xl text-[10px]"><b>Data Realtime (kasih-kopdes):</b><div id="savedList" class="mt-2 space-y-1"></div></div>
+<div class="max-w-[1800px] mx-auto p-3">
+<!-- STAT -->
+<div class="grid grid-cols-4 gap-2 text-[10px]">
+<div class="card p-3"><b>Total UMKM</b><br><span id="totalUMKM" class="text-[16px] font-black">0</span></div>
+<div class="card p-3"><b>Layak Utama</b><br><span id="layakUtama" class="text-[16px] font-black text-green-600">0</span></div>
+<div class="card p-3"><b>Per Jenis</b><br><span id="perJenis" class="text-[9px]">-</span></div>
+<div class="card p-3"><b>Rata Skor</b><br><span id="rataSkor" class="text-[16px] font-black">0</span></div>
 </div>
 
-<!-- HASIL -->
-<div class="space-y-3">
-<div id="singleResult" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-<div class="card p-4"><h3 class="font-bold text-[11px]">📊 Perbandingan 3 UMKM</h3><canvas id="compareChart" height="250"></canvas></div>
-<div class="card p-4"><h3 class="font-bold text-[11px]">🏆 Ranking & Rekomendasi</h3><div id="ranking" class="mt-3 space-y-2"></div><div id="rekomBanding" class="mt-4 bg-green-50 border border-green-200 p-3 rounded-xl text-[11px]"></div></div>
-</div>
+<!-- ARSIP -->
+<div id="view-arsip" class="mt-3">
 <div class="card p-4">
-<h3 class="font-bold text-[11px]">📋 Tabel Perbandingan Lengkap</h3>
-<div class="overflow-auto mt-3"><table class="w-full text-[10px] border"><thead class="bg-[#BE1E2D] text-white"><tr><th class="p-2 text-left">Aspek</th><th class="p-2" id="th0">UMKM 1</th><th class="p-2" id="th1">UMKM 2</th><th class="p-2" id="th2">UMKM 3</th><th class="p-2">Terbaik</th></tr></thead><tbody id="tbodyBanding"></tbody></table></div>
+<div class="flex gap-2 flex-wrap"><input id="search" oninput="renderArsip()" class="input flex-1" placeholder="Cari nama UMKM..."><select id="filterJenis" onchange="renderArsip()" class="input w-[150px]"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Lainnya</option></select><select id="filterLayak" onchange="renderArsip()" class="input w-[150px]"><option value="">Semua Skor</option><option value="utama">Layak Utama (80+)</option><option value="cukup">Cukup (60-79)</option><option value="belum">Belum (0-59)</option></select></div>
+<div id="listArsip" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
 </div>
-<div id="laporanFinal" class="card p-5 border-t-4 border-[#BE1E2D] text-[11px] leading-relaxed"></div>
+</div>
+
+<!-- BANDING -->
+<div id="view-banding" class="hidden mt-3 space-y-3">
+<div class="card p-4"><h3 class="font-black text-[12px]">UMKM Terpilih untuk Dibandingkan (centang di Arsip)</h3><div id="selectedBanding" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3"></div><button onclick="bandingkanTerpilih()" class="mt-3 w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">⚖️ BANDINGKAN SEKARANG</button></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="card p-4"><canvas id="compareChart" height="250"></canvas></div><div class="card p-4"><h3 class="font-bold text-[11px]">🏆 Ranking</h3><div id="ranking" class="mt-3 space-y-2"></div><div id="rekomBanding" class="mt-3 bg-green-50 border p-3 rounded-xl text-[11px]"></div></div></div>
+<div class="card p-4"><h3 class="font-bold text-[11px]">📋 Tabel Perbandingan</h3><div class="overflow-auto mt-3"><table class="w-full text-[10px] border" id="tableBanding"><thead class="bg-[#BE1E2D] text-white"></thead><tbody></tbody></table></div></div>
+</div>
+
+<!-- LAPORAN -->
+<div id="view-laporan" class="hidden mt-3">
+<div class="card p-4">
+<div class="flex justify-between flex-wrap gap-2"><h2 class="font-black text-[13px]">📄 Preview Laporan UMKM Kertanegara</h2><div class="flex gap-2"><button onclick="downloadPDF()" class="bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">PDF</button><button onclick="downloadExcel()" class="bg-green-600 text-white px-3 py-2 rounded-full text-[10px]">Excel</button><button onclick="downloadJPG()" class="bg-blue-600 text-white px-3 py-2 rounded-full text-[10px]">JPG</button></div></div>
+<div id="laporanPreview" class="mt-4 bg-white border rounded-xl p-5">
+<div class="text-center border-b pb-4">
+<b class="text-[16px]">LAPORAN DATA UMKM DESA KASIH - KEC. KERTANEGARA</b><br>
+<span class="text-[11px] text-slate-500">KDKMP Kasih - Purbalingga - Data Realtime Firebase</span><br>
+<span class="text-[10px] text-slate-400" id="tglLaporan"></span>
+<div class="mt-3 grid grid-cols-3 gap-2 text-[10px]"><div class="bg-slate-50 p-2 rounded-xl"><b id="lpTotal">0</b><br>Total UMKM</div><div class="bg-green-50 p-2 rounded-xl"><b id="lpUtama">0</b><br>Layak Mitra Utama</div><div class="bg-blue-50 p-2 rounded-xl"><b id="lpRata">0</b><br>Rata Skor</div></div>
+</div>
+<div class="mt-4">
+<p class="font-bold text-[11px]">📊 REKAP PER JENIS USAHA</p>
+<table class="w-full mt-2 text-[10px] border" id="lpJenis"><thead class="bg-slate-100"><tr><th class="border p-2 text-left">Jenis</th><th class="border p-2">Jumlah</th><th class="border p-2">Rata Skor</th><th class="border p-2">Terbaik</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="mt-4">
+<p class="font-bold text-[11px]">🏆 TOP 10 UMKM TERKUAT (Semua Jenis)</p>
+<table class="w-full mt-2 text-[10px] border" id="lpTop10"><thead class="bg-green-50"><tr><th class="border p-2">Rank</th><th class="border p-2 text-left">Nama UMKM</th><th class="border p-2">Jenis</th><th class="border p-2">Skor</th><th class="border p-2">Utilisasi</th><th class="border p-2">Omzet/bln</th><th class="border p-2">Rekomendasi</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="mt-4">
+<p class="font-bold text-[11px]">📚 DAFTAR LENGKAP SEMUA UMKM</p>
+<table class="w-full mt-2 text-[9px] border" id="lpAll"><thead class="bg-slate-50"><tr><th class="border p-1">No</th><th class="border p-1 text-left">Nama</th><th class="border p-1">Jenis</th><th class="border p-1">Lama</th><th class="border p-1">Skor</th><th class="border p-1">Status</th><th class="border p-1">Kontak/ Alamat</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="mt-4 bg-yellow-50 border p-3 rounded-xl text-[11px]" id="lpRekom"></div>
+<div class="mt-4 text-[9px] text-slate-400 text-center">Generated by UMKM Kertanegara V4 - Firebase Realtime kasih-kopdes - Laporan resmi untuk Rapat Pengurus</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MODAL FORM -->
+<div id="modalForm" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-3">
+<div class="bg-white rounded-[20px] w-full max-w-[500px] max-h-[90vh] overflow-auto p-5">
+<h2 class="font-black text-[14px]" id="modalTitle">+ Tambah UMKM Baru</h2>
+<div id="modalBody" class="mt-3 space-y-3"></div>
+<div class="flex gap-2 mt-4"><button onclick="closeModal()" class="flex-1 bg-slate-200 py-3 rounded-full text-[11px]">Batal</button><button onclick="saveModal()" class="flex-1 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">💾 Simpan ke Firebase</button></div>
 </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
@@ -57,63 +94,24 @@ const firebaseConfig = {
   appId: "1:746954171317:web:c603cc408212a50ece2ffc",
   measurementId: "G-ERLHDFQL4K"
 };
-
 const appFB = initializeApp(firebaseConfig);
 const db = getDatabase(appFB);
-document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes - umkm_kertanegara_v3 realtime';
+document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes - umkm_v4_unlimited';
 
-let currentIdx=0;
-let umkms=[null,null,null];
+let umkms=[]; // [{id, ...}]
+let selectedIds=[];
+let currentEditId=null;
 let compareChart=null;
+let tab='arsip';
 
-const dbRef=ref(db,'umkm_kertanegara_v3/data');
+const umkmRef=ref(db,'umkm_kertanegara_v4/list');
 
-onValue(dbRef, snap=>{
+onValue(umkmRef, snap=>{
  let data=snap.val();
- if(data){
-  umkms=[data.umkm1||null, data.umkm2||null, data.umkm3||null];
- }else{
-  umkms=[null,null,null];
- }
- renderSaved();
- renderCurrentForm();
- if(umkms[currentIdx]) renderSingle(currentIdx);
- if(umkms.filter(x=>x).length>=2) bandingkanSemua();
+ umkms=[]; if(data) Object.keys(data).forEach(k=> umkms.push({id:k, ...data[k]}));
+ renderStats(); renderArsip(); renderLaporan();
+ if(tab=='banding') renderSelected();
 });
-
-function getFormHTML(idx){
- let d=umkms[idx]||{nama:'', jenis:'Makanan', lama:'2', prod_now:'', prod_max:'', alat:'', jam:'', sdm:'2', skill:'3', modal:'', omzet:'', catat:'3', bahan:'5', pelanggan:'', online:'3', nib:'3', lokasi:'3'};
- return `
- <div class="space-y-3">
- <div><p class="label">Nama UMKM</p><input id="nama" class="input font-bold" placeholder="Bu Siti - Keripik" value="${d.nama}"></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis</p><select id="jenis" class="input"><option ${d.jenis=='Makanan'?'selected':''}>Makanan</option><option ${d.jenis=='Minuman'?'selected':''}>Minuman</option><option ${d.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${d.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option></select></div><div><p class="label">Lama Usaha</p><select id="lama" class="input"><option value="1" ${d.lama=='1'?'selected':''}><1 th</option><option value="2" ${d.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${d.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${d.lama=='5'?'selected':''}>>5 th</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang/hari</p><input id="prod_now" type="number" class="input" value="${d.prod_now}" placeholder="100"></div><div><p class="label">Kapasitas Maks/hari</p><input id="prod_max" type="number" class="input" value="${d.prod_max}" placeholder="200"></div><div><p class="label">Jml Alat</p><input id="alat" type="number" class="input" value="${d.alat}" placeholder="2"></div><div><p class="label">Jam Kerja</p><input id="jam" type="number" class="input" value="${d.jam}" placeholder="8"></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Tenaga Kerja</p><input id="sdm" type="number" class="input" value="${d.sdm}"></div><div><p class="label">Skill 1-5</p><select id="skill" class="input"><option value="2" ${d.skill=='2'?'selected':''}>2-Dasar</option><option value="3" ${d.skill=='3'?'selected':''}>3-Cukup</option><option value="4" ${d.skill=='4'?'selected':''}>4-Mahir</option><option value="5" ${d.skill=='5'?'selected':''}>5-Ahli</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Modal jt/bln</p><input id="modal" type="number" class="input" value="${d.modal}" placeholder="10"></div><div><p class="label">Omzet jt/bln</p><input id="omzet" type="number" class="input" value="${d.omzet}" placeholder="15"></div><div><p class="label">Catat Keuangan</p><select id="catat" class="input"><option value="1" ${d.catat=='1'?'selected':''}>Tidak</option><option value="3" ${d.catat=='3'?'selected':''}>Seadanya</option><option value="5" ${d.catat=='5'?'selected':''}>Rapi</option></select></div><div><p class="label">Bahan Baku</p><select id="bahan" class="input"><option value="1" ${d.bahan=='1'?'selected':''}>Sulit</option><option value="3" ${d.bahan=='3'?'selected':''}>Musiman</option><option value="5" ${d.bahan=='5'?'selected':''}>Mudah</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Pelanggan Tetap</p><input id="pelanggan" type="number" class="input" value="${d.pelanggan}" placeholder="20"></div><div><p class="label">Online</p><select id="online" class="input"><option value="1" ${d.online=='1'?'selected':''}>Tidak</option><option value="3" ${d.online=='3'?'selected':''}>WA</option><option value="5" ${d.online=='5'?'selected':''}>Marketplace</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Legalitas</p><select id="nib" class="input"><option value="1" ${d.nib=='1'?'selected':''}>Belum NIB</option><option value="3" ${d.nib=='3'?'selected':''}>NIB</option><option value="5" ${d.nib=='5'?'selected':''}>NIB+PIRT+Halal</option></select></div><div><p class="label">Tempat</p><select id="lokasi" class="input"><option value="3" ${d.lokasi=='3'?'selected':''}>Rumahan</option><option value="5" ${d.lokasi=='5'?'selected':''}>Tetap</option></select></div></div>
- </div>`;
-}
-
-function renderCurrentForm(){
- document.querySelectorAll('[id^=tab]').forEach((b,i)=>{b.className=i==currentIdx?'tab-active flex-1 py-2 rounded-full text-[10px] font-bold border':'flex-1 py-2 rounded-full text-[10px] font-bold border bg-white'});
- document.getElementById('formContainer').innerHTML=getFormHTML(currentIdx);
- document.getElementById('saveNum').innerText=currentIdx+1;
-}
-
-window.switchUMKM=(idx)=>{ currentIdx=idx; renderCurrentForm(); if(umkms[idx]) renderSingle(idx); }
-window.saveCurrent=async()=>{
- let d={nama:document.getElementById('nama').value, jenis:document.getElementById('jenis').value, lama:document.getElementById('lama').value, prod_now:document.getElementById('prod_now').value, prod_max:document.getElementById('prod_max').value, alat:document.getElementById('alat').value, jam:document.getElementById('jam').value, sdm:document.getElementById('sdm').value, skill:document.getElementById('skill').value, modal:document.getElementById('modal').value, omzet:document.getElementById('omzet').value, catat:document.getElementById('catat').value, bahan:document.getElementById('bahan').value, pelanggan:document.getElementById('pelanggan').value, online:document.getElementById('online').value, nib:document.getElementById('nib').value, lokasi:document.getElementById('lokasi').value, updated:Date.now()};
- if(!d.nama) return alert('Isi nama UMKM dulu');
- let key=currentIdx==0?'umkm1':currentIdx==1?'umkm2':'umkm3';
- await update(dbRef, {[key]:d});
- alert('✅ Tersimpan realtime ke Firebase: '+d.nama);
-}
-
-function renderSaved(){
- document.getElementById('savedList').innerHTML=umkms.map((u,i)=>u?`<div class="flex justify-between bg-white border p-2 rounded-xl"><span>${i+1}. ${u.nama} - ${calcScore(u).total}/100</span><button onclick="switchUMKM(${i})" class="text-[#BE1E2D] font-bold">Edit</button></div>`:`<div class="text-slate-400 p-1">${i+1}. Kosong - belum input</div>`).join('');
- umkms.forEach((u,i)=>{ if(u) document.getElementById('th'+i).innerText=u.nama.substring(0,15); else document.getElementById('th'+i).innerText='UMKM '+(i+1); });
-}
 
 function calcScore(d){
  if(!d) return null;
@@ -126,32 +124,107 @@ function calcScore(d){
  let sLegal=Math.min(20, nib*2+lama+5);
  let total=Math.round(sProd+sSDM+sModal+sPasar+sLegal);
  let potensi=(max-now)*(omzet>0&&now>0?(omzet*1000000/now):50000);
- return {total, utilisasi, sProd, sSDM, sModal, sPasar, sLegal, potensi, now, max, nama:d.nama};
+ let status=total>=80?'LAYAK UTAMA':total>=60?'CUKUP':'BELUM';
+ return {total, utilisasi, sProd, sSDM, sModal, sPasar, sLegal, potensi, now, max, status, nama:d.nama, jenis:d.jenis};
 }
 
-function renderSingle(idx){
- let s=calcScore(umkms[idx]); if(!s) return;
- document.getElementById('singleResult').innerHTML=`<div class="card p-4 border-l-4 border-blue-600"><p class="label">UMKM ${idx+1} - ${s.nama}</p><b class="text-[26px]">${s.total}/100</b><p class="text-[10px] mt-1">${s.total>=80?'✅ LAYAK MITRA UTAMA':s.total>=60?'⚠️ CUKUP':'❌ BELUM'}</p></div><div class="card p-4 border-l-4 border-green-600"><p class="label">Utilisasi</p><b class="text-[26px]">${s.utilisasi}%</b><p class="text-[10px]">${s.now}/${s.max} per hari</p></div><div class="card p-4 border-l-4 border-orange-600"><p class="label">Potensi Tambahan</p><b class="text-[16px]">Rp ${Math.round(s.potensi).toLocaleString()}</b></div>`;
+function renderStats(){
+ document.getElementById('totalUMKM').innerText=umkms.length;
+ let scores=umkms.map(calcScore).filter(x=>x);
+ let utama=scores.filter(s=>s.total>=80).length;
+ document.getElementById('layakUtama').innerText=utama;
+ document.getElementById('rataSkor').innerText=scores.length? Math.round(scores.reduce((a,b)=>a+b.total,0)/scores.length):0;
+ let perJenis={}; scores.forEach(s=>{ perJenis[s.jenis]=(perJenis[s.jenis]||0)+1; });
+ document.getElementById('perJenis').innerText=Object.keys(perJenis).map(k=>`${k}:${perJenis[k]}`).join(', ')||'-';
 }
 
-window.bandingkanSemua=()=>{
- let data=umkms.map(calcScore).filter(x=>x); if(data.length==0) return alert('Simpan minimal 1 UMKM di Firebase dulu');
- if(data.length==1){ renderSingle(0); return; }
- data.sort((a,b)=>b.total-a.total);
- document.getElementById('ranking').innerHTML=data.map((d,i)=>`<div class="flex justify-between items-center border p-2 rounded-xl ${i==0?'bg-green-50 border-green-300':''}"><div><b class="text-[11px]">${i==0?'🏆':i==1?'🥈':'🥉'} #${i+1} ${d.nama}</b><p class="text-[9px]">${d.total}/100 | Util ${d.utilisasi}%</p></div><span class="font-black text-[14px]">${d.total}</span></div>`).join('');
- if(compareChart) compareChart.destroy();
- compareChart=new Chart(document.getElementById('compareChart'), {type:'bar', data:{labels:['Produksi','SDM','Modal','Pasar','Legal','TOTAL'], datasets:data.map((d,idx)=>({label:d.nama, data:[d.sProd, d.sSDM, d.sModal, d.sPasar, d.sLegal, d.total], backgroundColor:['#2563eb','#a855f7','#16a34a'][idx]}))}, options:{responsive:true, plugins:{legend:{position:'bottom', labels:{font:{size:9}}}}, scales:{y:{min:0, max:100}}}});
- let aspek=[['Produksi','sProd'],['SDM','sSDM'],['Modal','sModal'],['Pasar','sPasar'],['Legal','sLegal'],['TOTAL','total']];
- document.getElementById('tbodyBanding').innerHTML=aspek.map(([label,key])=>{
-  let vals=data.map(d=>d[key]); let maxVal=Math.max(...vals);
-  return `<tr class="border-b ${label=='TOTAL'?'font-bold bg-yellow-50':''}"><td class="p-2">${label}</td>${[0,1,2].map(i=>{let d=umkms[i]?calcScore(umkms[i]):null; return `<td class="p-2 text-center ${d&&d[key]==maxVal?'bg-green-100 font-bold':''}">${d?Math.round(d[key]):'-'}</td>`}).join('')}<td class="p-2 text-center font-bold text-green-700">${Math.round(maxVal)}</td></tr>`;
+window.setTab=(t)=>{
+ tab=t;
+ document.getElementById('view-arsip').classList.toggle('hidden', t!='arsip');
+ document.getElementById('view-banding').classList.toggle('hidden', t!='banding');
+ document.getElementById('view-laporan').classList.toggle('hidden', t!='laporan');
+ if(t=='banding') renderSelected();
+ if(t=='laporan') renderLaporan();
+}
+
+function renderArsip(){
+ let q=(document.getElementById('search').value||'').toLowerCase();
+ let fj=document.getElementById('filterJenis').value;
+ let fl=document.getElementById('filterLayak').value;
+ let filtered=umkms.filter(u=>{
+  let s=calcScore(u); if(!s) return true;
+  if(q && !u.nama.toLowerCase().includes(q)) return false;
+  if(fj && u.jenis!=fj) return false;
+  if(fl=='utama' && s.total<80) return false;
+  if(fl=='cukup' && (s.total<60||s.total>=80)) return false;
+  if(fl=='belum' && s.total>=60) return false;
+  return true;
+ });
+ document.getElementById('listArsip').innerHTML=filtered.map(u=>{
+  let s=calcScore(u); let checked=selectedIds.includes(u.id);
+  return `<div class="card p-4 border ${checked?'ring-2 ring-[#BE1E2D]':''}">
+   <div class="flex justify-between"><div><b class="text-[12px]">${u.nama}</b><br><span class="text-[9px] bg-slate-100 px-2 py-1 rounded-full">${u.jenis} • ${u.lama} th</span> <span class="text-[9px] ${s.total>=80?'bg-green-100 text-green-700':s.total>=60?'bg-yellow-100':'bg-red-100'} px-2 py-1 rounded-full">${s.total}/100 - ${s.status}</span></div><input type="checkbox" ${checked?'checked':''} onchange="toggleSelect('${u.id}')" class="w-5 h-5"></div>
+   <div class="grid grid-cols-3 gap-2 mt-3 text-[10px]"><div>Prod: ${u.prod_now}/${u.prod_max}</div><div>Omzet: ${u.omzet} jt</div><div>Util: ${s.utilisasi}%</div></div>
+   <div class="flex gap-2 mt-3"><button onclick="editUMKM('${u.id}')" class="flex-1 bg-slate-900 text-white py-2 rounded-full text-[10px]">✏️ Edit</button><button onclick="deleteUMKM('${u.id}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-full text-[10px]">🗑️</button></div>
+  </div>`;
  }).join('');
- let terbaik=data[0];
- document.getElementById('rekomBanding').innerHTML=`<b>KEPUTUSAN:</b> ${terbaik.nama} paling kuat (skor ${terbaik.total}/100). Jadikan Mitra Utama. Estimasi tambahan omzet: Rp ${Math.round(data.reduce((s,d)=>s+d.potensi,0)).toLocaleString()}/bln`;
- document.getElementById('laporanFinal').innerHTML=`<h3 class="font-black text-[#BE1E2D]">📑 LAPORAN REALTIME - ${new Date().toLocaleDateString('id-ID')} - Firebase kasih-kopdes</h3><br>Ranking:<br>${data.map((d,i)=>`${i+1}. ${d.nama} - ${d.total}/100`).join('<br>')}<br><br>Rekomendasi: ${terbaik.nama} sebagai mitra utama. Data tersimpan realtime di Firebase, bisa dibuka pengurus lain langsung.`;
+ document.getElementById('countBanding').innerText=selectedIds.length;
 }
 
-renderCurrentForm();
-</script>
-</body>
-</html>
+window.toggleSelect=(id)=>{
+ if(selectedIds.includes(id)) selectedIds=selectedIds.filter(x=>x!=id); else { if(selectedIds.length>=3) return alert('Maksimal bandingin 3 UMKM aja, biar jelas'); selectedIds.push(id); }
+ renderArsip(); renderSelected();
+}
+
+function renderSelected(){
+ document.getElementById('selectedBanding').innerHTML=selectedIds.map(id=>{
+  let u=umkms.find(x=>x.id==id); if(!u) return ''; let s=calcScore(u);
+  return `<div class="card p-3 border"><b class="text-[11px]">${u.nama}</b><p class="text-[10px]">${u.jenis} - ${s.total}/100</p></div>`;
+ }).join('')||'<p class="text-[11px] text-slate-400">Belum ada yang dipilih. Centang di tab Arsip dulu.</p>';
+}
+
+window.bandingkanTerpilih=()=>{
+ if(selectedIds.length<2) return alert('Pilih minimal 2 UMKM di Arsip untuk dibandingin');
+ let data=selectedIds.map(id=> umkms.find(x=>x.id==id)).map(calcScore).filter(x=>x);
+ data.sort((a,b)=>b.total-a.total);
+ document.getElementById('ranking').innerHTML=data.map((d,i)=>`<div class="flex justify-between border p-2 rounded-xl ${i==0?'bg-green-50 border-green-300':''}"><div><b class="text-[11px]">${i==0?'🏆':i==1?'🥈':'🥉'} ${d.nama}</b><p class="text-[9px]">${d.total}/100 | ${d.jenis}</p></div><b>${d.total}</b></div>`).join('');
+ if(compareChart) compareChart.destroy();
+ compareChart=new Chart(document.getElementById('compareChart'), {type:'bar', data:{labels:['Produksi',[STRIPPED] datasets:data.map((d,idx)=>({label:d.nama, data:[d.sProd, d.sSDM, d.sModal, d.sPasar, d.sLegal, d.total], backgroundColor:['#2563eb','#16a34a','#ea580c'][idx]}))}, options:{responsive:true, scales:{y:{min:0, max:100}}}});
+ let aspek=[['Produksi','sProd'],['SDM','sSDM'],['Modal','sModal'],['Pasar','sPasar'],['Legal','sLegal'],['TOTAL','total']];
+ document.querySelector('#tableBanding thead').innerHTML=`<tr><th class="p-2 text-left">Aspek</th>`+data.map(d=>`<th class="p-2">${d.nama.substring(0,15)}</th>`).join('')+`<th class="p-2">Terbaik</th></tr>`;
+ document.querySelector('#tableBanding tbody').innerHTML=aspek.map(([label,key])=>{
+  let vals=data.map(d=>d[key]); let maxVal=Math.max(...vals);
+  return `<tr class="border-b ${label=='TOTAL'?'font-bold bg-yellow-50':''}"><td class="p-2">${label}</td>`+data.map(d=>`<td class="p-2 text-center ${d[key]==maxVal?'bg-green-100 font-bold':''}">${Math.round(d[key])}</td>`).join('')+`<td class="p-2 text-center font-bold">${Math.round(maxVal)}</td></tr>`;
+ }).join('');
+ document.getElementById('rekomBanding').innerHTML=`<b>Keputusan:</b> ${data[0].nama} paling kuat (${data[0].total}/100). Jadikan Mitra Utama untuk jenis ${data[0].jenis}.`;
+}
+
+function renderLaporan(){
+ let scores=umkms.map(u=> ({u, s:calcScore(u)})).filter(x=>x.s);
+ scores.sort((a,b)=>b.s.total-a.s.total);
+ document.getElementById('tglLaporan').innerText=new Date().toLocaleDateString('id-ID',{weekday:'long', day:'numeric', month:'long', year:'numeric'})+' - Desa Kasih, Kertanegara';
+ document.getElementById('lpTotal').innerText=umkms.length;
+ document.getElementById('lpUtama').innerText=scores.filter(x=>x.s.total>=80).length;
+ document.getElementById('lpRata').innerText=scores.length? Math.round(scores.reduce((a,b)=>a+b.s.total,0)/scores.length):0;
+
+ // per jenis
+ let perJenis={};
+ scores.forEach(({u,s})=>{ if(!perJenis[s.jenis]) perJenis[s.jenis]={count:0, total:0, best:null}; perJenis[s.jenis].count++; perJenis[s.jenis].total+=s.total; if(!perJenis[s.jenis].best || s.total>perJenis[s.jenis].best.total) perJenis[s.jenis].best=s; });
+ document.querySelector('#lpJenis tbody').innerHTML=Object.keys(perJenis).map(k=>`<tr><td class="border p-2">${k}</td><td class="border p-2 text-center">${perJenis[k].count}</td><td class="border p-2 text-center">${Math.round(perJenis[k].total/perJenis[k].count)}</td><td class="border p-2">${perJenis[k].best.nama} (${perJenis[k].best.total})</td></tr>`).join('');
+
+ // top 10
+ document.querySelector('#lpTop10 tbody').innerHTML=scores.slice(0,10).map((x,i)=>`<tr class="${i==0?'bg-yellow-50':''}"><td class="border p-2 text-center">${i+1}</td><td class="border p-2 font-bold">${x.u.nama}</td><td class="border p-2">${x.s.jenis}</td><td class="border p-2 text-center font-bold">${x.s.total}</td><td class="border p-2 text-center">${x.s.utilisasi}%</td><td class="border p-2">Rp ${x.u.omzet||0} jt</td><td class="border p-2">${x.s.status}</td></tr>`).join('');
+
+ // all
+ document.querySelector('#lpAll tbody').innerHTML=scores.map((x,i)=>`<tr><td class="border p-1 text-center">${i+1}</td><td class="border p-1 font-bold">${x.u.nama}</td><td class="border p-1">${x.s.jenis}</td><td class="border p-1 text-center">${x.u.lama} th</td><td class="border p-1 text-center">${x.s.total}</td><td class="border p-1">${x.s.status}</td><td class="border p-1">${x.u.alamat||'-'}</td></tr>`).join('');
+
+ document.getElementById('lpRekom').innerHTML=`<b>💡 Rekomendasi Kopdes:</b><br>1. Fokus Mitra Utama: ${scores.filter(x=>x.s.total>=80).slice(0,3).map(x=>x.u.nama).join(', ')||'Belum ada yang 80+'}<br>2. Perlu pembinaan: ${scores.filter(x=>x.s.total<60).length} UMKM skor di bawah 60.<br>3. Jenis terbanyak: ${Object.keys(perJenis).sort((a,b)=>perJenis[b].count-perJenis[a].count)[0]||'-'} - bisa jadi usaha unggulan Desa Kasih.`;
+}
+
+function getModalHTML(data){
+ let d=data||{nama:'', jenis:'Makanan', lama:'2', prod_now:'', prod_max:'', alat:'', jam:'8', sdm:'2', skill:'3', modal:'', omzet:'', catat:'3', bahan:'5', pelanggan:'', online:'3', nib:'3', lokasi:'3', alamat:'', hp:''};
+ return `
+ <div><p class="label">Nama UMKM *</p><input id="m_nama" class="input font-bold" value="${d.nama}" placeholder="Bu Siti - Keripik"></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis Usaha</p><select id="m_jenis" class="input"><option ${d.jenis=='Makanan'?'selected':''}>Makanan</option><option ${d.jenis=='Minuman'?'selected':''}>Minuman</option><option ${d.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${d.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option><option ${d.jenis=='Jasa'?'selected':''}>Jasa</option><option ${d.jenis=='Lainnya'?'selected':''}>Lainnya</option></select></div><div><p class="label">Lama Usaha</p><select id="m_lama" class="input"><option value="1" ${d.lama=='1'?'selected':''}><1 th</option><option value="2" ${d.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${d.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${d.lama=='5'?'selected':''}>>5 th</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang/hari</p><input id="m_prod_now" type="number" class="input" value="${d.prod_now}"></div><div><p class="label">Kapasitas Maks</p><input id="m_prod_max" type="number" class="input" value="${d.prod_max}"></div><div><p class="label">Alat</p><input id="m_alat" type="number" class="input" value="${d.alat}"></div><div><p class="label">Jam Kerja</p><input id="m_jam" type="number" class="input" value="${d.jam}"></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">SDM</p><input id="m_sdm" type="number" class="input" value="${d.sdm}"></div><div><p class="label">Skill 1-5</p><select id="m_skill" class="input"><option value="3" ${d.skill=='3'?'selected':''}>3-Cukup</option><option value="4" ${d.skill=='4'?'selected':''}>4-Mahir</option><option value="5" ${d.skill=='5'?'selected':''}>5
