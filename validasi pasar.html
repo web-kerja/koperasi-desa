@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validasi Pasar Minggu 4 - Kertanegara - Realtime</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>.input{border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px; font-size:11px; width:100%} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .label{font-size:9px; font-weight:800; color:#BE1E2D; text-transform:uppercase}</style>
+</head>
+<body class="bg-[#f8fafc]">
+<div class="bg-[#BE1E2D] text-white p-4 sticky top-0 z-50">
+<div class="max-w-[1400px] mx-auto flex justify-between items-center">
+<div><b class="text-[16px]">📊 VALIDASI PASAR - KERTANEGARA MINGGU 4</b><p class="text-[10px] opacity-80" id="fbStatus">Connecting kasih-kopdes...</p><p class="text-[10px] opacity-80">Grosir Kertanegara vs Warung Kasih - Realtime</p></div>
+<button onclick="addBarang()" class="bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black">+ Barang</button>
+</div>
+</div>
+
+<div class="max-w-[1400px] mx-auto p-3 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-3">
+<div class="space-y-3">
+<div class="card p-4">
+<div class="flex justify-between items-center"><h2 class="font-black text-[12px]">📝 INPUT HARGA - EDIT LANGSUNG DI TABEL</h2><span class="text-[10px] bg-green-100 px-3 py-1 rounded-full">Realtime Firebase</span></div>
+<div class="mt-3 overflow-auto max-h-[70vh]">
+<table class="w-full text-[11px]">
+<thead class="sticky top-0 bg-slate-50 text-[9px]"><tr><th class="p-2 text-left">Barang</th><th class="p-2">Grosir Kertanegara</th><th class="p-2">Jual Warung Kasih</th><th class="p-2">Selisih / Margin</th><th class="p-2">Rekom Jual Kopdes</th><th class="p-2">Aksi</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<p class="text-[10px] text-slate-400 mt-2">* Klik angka untuk edit, otomatis hitung. Semua kesimpen ke Firebase kasih-kopdes</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<div class="card p-4 border-l-4 border-green-600"><p class="label">Rata Untung</p><b id="avgUntung" class="text-[18px]">Rp 0</b><p class="text-[10px] text-slate-500">Per barang</p></div>
+<div class="card p-4 border-l-4 border-blue-600"><p class="label">Total Potensi Cuan (10 barang)</p><b id="totalCuan" class="text-[18px]">Rp 0</b><p class="text-[10px] text-slate-500">Jika stok 10 pcs / barang</p></div>
+<div class="card p-4 border-l-4 border-orange-600"><p class="label">Barang Paling Cuan</p><b id="top1" class="text-[12px]">-</b><p class="text-[10px] text-slate-500" id="top1Det">-</p></div>
+</div>
+</div>
+
+<div class="space-y-3">
+<div class="card p-4 bg-green-50 border border-green-200">
+<h3 class="font-black text-[11px] text-green-800">✅ 10 BARANG PALING CUAN - JUAL DULU</h3>
+<div id="listCuan" class="mt-3 space-y-2 text-[11px]"></div>
+</div>
+<div class="card p-4 bg-red-50 border border-red-200">
+<h3 class="font-black text-[11px] text-red-800">❌ 5 BARANG JANGAN DULU - UNTUNG TIPIS</h3>
+<div id="listRugi" class="mt-3 space-y-2 text-[11px]"></div>
+</div>
+<div class="card p-4">
+<h3 class="font-black text-[11px]">📄 LAPORAN 1 HALAMAN - SCREENSHOT INI</h3>
+<div class="mt-3 text-[11px] leading-relaxed" id="laporanText">
+<p><b>Laporan Validasi Pasar Kertanegara</b></p>
+<p class="mt-2">Berdasarkan cek harga grosir Kertanegara vs warung Kasih, rekomendasi kulakan pertama Kopdes adalah fokus di 10 barang paling cuan.</p>
+</div>
+<button onclick="copyLaporan()" class="w-full mt-3 bg-slate-900 text-white py-2 rounded-full text-[11px]">📋 Copy Laporan</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
+ authDomain: "kasih-kopdes.firebaseapp.com",
+ databaseURL: "https://kasih-kopdes-default-rtdb.asia-southeast1.firebasedatabase.app",
+ projectId: "kasih-kopdes",
+ storageBucket: "kasih-kopdes.firebasestorage.app",
+ messagingSenderId: "746954171317",
+ appId: "1:746954171317:web:e0eaa798e230b8a6ce2ffc",
+ measurementId: "G-M5V131KN80"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes - Validasi Pasar Realtime';
+
+let barangs=[];
+const defaultBarang=[
+ {nama:'Beras Medium 5kg', grosir:62000, eceran:70000},
+ {nama:'Beras Premium 5kg', grosir:68000, eceran:75000},
+ {nama:'Minyak Goreng 1L', grosir:14500, eceran:17000},
+ {nama:'Minyak Goreng 2L', grosir:28000, eceran:34000},
+ {nama:'Gula Pasir 1kg', grosir:13500, eceran:16000},
+ {nama:'Telur 1kg', grosir:26000, eceran:30000},
+ {nama:'Mie Instan Dus (40)', grosir:95000, eceran:110000},
+ {nama:'Kopi Sachet Renteng', grosir:9000, eceran:12000},
+ {nama:'Teh Celup', grosir:5000, eceran:7000},
+ {nama:'Garam 500g', grosir:3000, eceran:4000},
+ {nama:'Bawang Merah 1kg', grosir:30000, eceran:36000},
+ {nama:'Bawang Putih 1kg', grosir:28000, eceran:33000},
+ {nama:'Tepung Terigu 1kg', grosir:11000, eceran:13500},
+ {nama:'Susu Kental Manis', grosir:11000, eceran:13500},
+ {nama:'Sabun Cuci 800g', grosir:16000, eceran:19000},
+ {nama:'Sabun Mandi', grosir:3000, eceran:4500},
+ {nama:'Pasta Gigi', grosir:8000, eceran:11000},
+ {nama:'Gas LPG 3kg', grosir:20000, eceran:23000},
+ {nama:'Pupuk Urea 1kg', grosir:6000, eceran:8000},
+ {nama:'Keripik UMKM Kasih', grosir:7000, eceran:10000},
+];
+
+const barangRef=ref(db,'validasi_pasar_kertanegara/barangs');
+
+onValue(barangRef, snap=>{
+ let data=snap.val();
+ if(!data){
+  // seed awal
+  defaultBarang.forEach(b=> push(barangRef, {...b, created:Date.now()}));
+  return;
+ }
+ barangs=[]; Object.keys(data).forEach(k=>{ barangs.push({id:k, ...data[k]}); });
+ render();
+});
+
+function render(){
+ let html=barangs.map(b=>{
+  let selisih=(b.eceran||0)-(b.grosir||0);
+  let margin= b.grosir ? (selisih/b.grosir*100).toFixed(1):0;
+  let rekom= Math.round((b.grosir||0) + selisih*0.7); // jual 70% dari selisih biar lebih murah dari warung
+  let warna= selisih>=5000?'bg-green-100 text-green-700':selisih>=2000?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-700';
+  return `<tr class="border-b"><td class="p-2 font-bold">${b.nama}<br><input value="${b.nama}" onchange="editField('${b.id}','nama',this.value)" class="input mt-1 text-[9px]"></td>
+  <td class="p-2"><input type="number" value="${b.grosir}" onchange="editField('${b.id}','grosir',this.value)" class="input font-bold"></td>
+  <td class="p-2"><input type="number" value="${b.eceran}" onchange="editField('${b.id}','eceran',this.value)" class="input"></td>
+  <td class="p-2 text-center"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${warna}">+Rp ${selisih.toLocaleString('id-ID')}<br>${margin}%</span></td>
+  <td class="p-2 font-bold text-[#BE1E2D]">Rp ${rekom.toLocaleString('id-ID')}</td>
+  <td class="p-2"><button onclick="hapusBarang('${b.id}')" class="text-[12px]">🗑️</button></td></tr>`;
+ }).join('');
+ document.getElementById('tbody').innerHTML=html;
+
+ // Hitung
+ let sorted=[...barangs].sort((a,b)=> (b.eceran-b.grosir)-(a.eceran-a.grosir));
+ let top10=sorted.slice(0,10);
+ let bottom5=sorted.slice(-5).reverse();
+ let avg=top10.length? top10.reduce((s,x)=>s+(x.eceran-x.grosir),0)/top10.length:0;
+ document.getElementById('avgUntung').innerText='Rp '+Math.round(avg).toLocaleString('id-ID');
+ document.getElementById('totalCuan').innerText='Rp '+(avg*10*10).toLocaleString('id-ID');
+ if(top10[0]){ document.getElementById('top1').innerText=top10[0].nama; document.getElementById('top1Det').innerText=`Untung Rp ${(top10[0].eceran-top10[0].grosir).toLocaleString()} / pcs`; }
+
+ document.getElementById('listCuan').innerHTML=top10.map((b,i)=>`<div class="flex justify-between bg-white p-2 rounded-xl border"><span>${i+1}. ${b.nama}</span><b class="text-green-700">+Rp ${(b.eceran-b.grosir).toLocaleString()}</b></div>`).join('');
+ document.getElementById('listRugi').innerHTML=bottom5.map((b,i)=>`<div class="flex justify-between bg-white p-2 rounded-xl border"><span>${b.nama}</span><b class="text-red-700">+Rp ${(b.eceran-b.grosir).toLocaleString()}</b></div>`).join('');
+
+ // Laporan
+ let laporan=`LAPORAN VALIDASI PASAR - KERTANEGARA MINGGU 4
+Tanggal: ${new Date().toLocaleDateString('id-ID')}
+
+10 BARANG PALING CUAN (Kulak Pertama):
+${top10.map(b=>`- ${b.nama}: Grosir Rp ${b.grosir.toLocaleString()} → Jual Kopdes Rp ${Math.round(b.grosir+(b.eceran-b.grosir)*0.7).toLocaleString()} (Warung Kasih Rp ${b.eceran.toLocaleString()}, Untung Rp ${(b.eceran-b.grosir).toLocaleString()})`).join('\n')}
+
+5 BARANG JANGAN JUAL DULU (Untung tipis):
+${bottom5.map(b=>`- ${b.nama}: Untung cuma Rp ${(b.eceran-b.grosir).toLocaleString()}`).join('\n')}
+
+Rekomendasi: Fokus kulak 10 barang cuan dulu, jual sedikit lebih murah dari warung Kasih tapi masih untung ${Math.round(avg).toLocaleString()} rata-rata per barang.
+`;
+ document.getElementById('laporanText').innerText=laporan;
+}
+
+window.editField=async(id, field, val)=>{
+ let v= field=='nama'? val : Number(val);
+ await update(ref(db,'validasi_pasar_kertanegara/barangs/'+id), {[field]:v});
+}
+window.addBarang=async()=>{
+ let nama=prompt('Nama barang?'); if(!nama) return;
+ await push(barangRef, {nama, grosir:0, eceran:0, created:Date.now()});
+}
+window.hapusBarang=async(id)=>{
+ if(confirm('Hapus barang ini?')) await remove(ref(db,'validasi_pasar_kertanegara/barangs/'+id));
+}
+window.copyLaporan=()=>{
+ let t=document.getElementById('laporanText').innerText;
+ navigator.clipboard.writeText(t); alert('Laporan disalin, tinggal paste ke WA Pengurus');
+}
+</script>
+</body>
+  </html>
