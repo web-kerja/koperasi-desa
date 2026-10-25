@@ -2,56 +2,63 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PUSAT KDKMP KASIH - KASIH-KOPDES</title>
+<title>PUSAT KDKMP KASIH V5 - Auto Bulan HP</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>.card{border-radius:24px; transition:.3s} .card:hover{transform:translateY(-4px); box-shadow:0 12px 30px rgba(0,0,0,.12)} .kat-active{background:#BE1E2D!important; color:white!important} .input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 14px; font-size:12px; width:100%}</style>
 </head>
 <body class="bg-[#f8f7f4]">
 <div class="bg-[#BE1E2D] text-white p-5 sticky top-0 z-50">
 <div class="max-w-[1400px] mx-auto flex justify-between items-center">
-<div><b class="text-[18px]">🏪 PUSAT KDKMP KASIH</b><p class="text-[10px] opacity-80" id="fbStatus">Connecting to kasih-kopdes...</p></div>
-<div class="flex gap-2"><button onclick="openAdd()" class="bg-white text-[#BE1E2D] px-5 py-2 rounded-full text-[11px] font-black">+ TAMBAH LINK</button></div>
+<div><b class="text-[18px]">🏪 PUSAT KDKMP KASIH V5</b><p class="text-[10px] opacity-80" id="fbStatus">Connecting...</p><p class="text-[10px] mt-1 font-bold" id="prioritasInfo">🔄 Deteksi bulan HP...</p></div>
+<div class="flex gap-2"><button onclick="openKat()" class="bg-black px-4 py-2 rounded-full text-[10px]">✏️ Kategori</button><button onclick="openAdd()" class="bg-white text-[#BE1E2D] px-5 py-2 rounded-full text-[11px] font-black">+ TAMBAH</button></div>
 </div>
 </div>
 
 <div class="max-w-[1400px] mx-auto p-4">
 <div class="flex flex-col md:flex-row gap-3">
-<input id="search" oninput="render()" placeholder="🔍 Cari: keuangan, UMKM, SOP..." class="flex-1 border rounded-full px-5 py-3 text-[12px] bg-white">
-<div class="flex gap-2 overflow-auto">
-<button onclick="setKat('semua')" id="kat-semua" class="kat-active px-5 py-3 rounded-full text-[11px] font-bold border">Semua</button>
-<button onclick="setKat('keuangan')" id="kat-keuangan" class="px-5 py-3 rounded-full text-[11px] font-bold border bg-white">💰 Keuangan</button>
-<button onclick="setKat('umkm')" id="kat-umkm" class="px-5 py-3 rounded-full text-[11px] font-bold border bg-white">🏭 UMKM</button>
-<button onclick="setKat('toko')" id="kat-toko" class="px-5 py-3 rounded-full text-[11px] font-bold border bg-white">🏪 Toko</button>
-<button onclick="setKat('dokumen')" id="kat-dokumen" class="px-5 py-3 rounded-full text-[11px] font-bold border bg-white">📄 Dokumen</button>
+<input id="search" oninput="render()" placeholder="🔍 Cari: LK Oktober, keuangan, SOP..." class="flex-1 border rounded-full px-5 py-3 text-[12px] bg-white">
+<div class="flex gap-2 overflow-auto" id="katContainer"></div>
 </div>
-</div>
-<div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6"></div>
-<div id="empty" class="text-center py-20 text-slate-400 text-[12px]">Belum ada link. Klik + TAMBAH LINK, semua auto generate gambar & kategori, langsung sync Firebase</div>
+<div class="mt-3 flex flex-wrap gap-2 text-[10px]"><span class="bg-yellow-100 px-3 py-1 rounded-full border" id="infoPrioritas">Loading...</span><span class="bg-white border px-3 py-1 rounded-full">📱 Auto ikut bulan HP kamu</span></div>
+<div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL ADD -->
 <div id="modal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-end md:items-center justify-center p-3">
-<div class="bg-white rounded-[24px] w-full max-w-[460px] p-6">
-<h2 class="font-black text-[14px]">Tambah Link Baru - Auto Generate</h2>
+<div class="bg-white rounded-[24px] w-full max-w-[480px] p-6 max-h-[90vh] overflow-auto">
+<h2 class="font-black text-[14px]">Tambah / Edit Link - Auto Generate</h2>
 <div class="mt-4 space-y-3">
-<div><p class="text-[10px] font-bold">Nama Aplikasi</p><input id="fNama" class="input" placeholder="CatatDuit Multi Dompet"></div>
+<div><p class="text-[10px] font-bold">Nama Aplikasi (tulis bulannya, contoh: LK Oktober)</p><input id="fNama" class="input" placeholder="LK Oktober - Validasi Pasar Bobotsari"></div>
 <div><p class="text-[10px] font-bold">Link GitHub Pages</p><input id="fLink" class="input" placeholder="https://username.github.io/..."></div>
-<div><p class="text-[10px] font-bold">Deskripsi</p><input id="fDesc" class="input" placeholder="Untuk catat keuangan, banyak e-wallet 0"></div>
+<div><p class="text-[10px] font-bold">Deskripsi</p><input id="fDesc" class="input" placeholder="Laporan Oktober, atau keuangan pribadi"></div>
 <div class="grid grid-cols-2 gap-2">
-<div><p class="text-[10px] font-bold">Kategori</p><select id="fKat" class="input"><option value="auto">🤖 Auto Detect</option><option value="keuangan">💰 Keuangan</option><option value="umkm">🏭 UMKM</option><option value="toko">🏪 Toko</option><option value="dokumen">📄 Dokumen</option></select></div>
+<div><p class="text-[10px] font-bold">Kategori</p><select id="fKat" class="input"></select></div>
+<div><p class="text-[10px] font-bold">Bulan (Auto)</p><select id="fBulan" class="input"><option value="auto">🤖 Auto dari nama</option><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option><option value="">Tanpa Bulan</option></select></div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div><p class="text-[10px] font-bold">Prioritas (1=atas)</p><input id="fPrior" type="number" class="input" value="99"></div>
 <div><p class="text-[10px] font-bold">Gambar</p><select id="fImg" class="input"><option value="auto">🤖 Auto Gambar</option><option value="keuangan">Keuangan</option><option value="umkm">UMKM</option><option value="toko">Toko</option><option value="dokumen">Dokumen</option></select></div>
 </div>
-<div class="bg-yellow-50 border p-3 rounded-xl text-[10px]"><b>Auto Preview:</b><br><span id="previewKat">Ketik nama, kategori auto detect</span><br><span id="previewImg">Gambar auto dari kategori</span></div>
+<div class="bg-yellow-50 border p-3 rounded-xl text-[10px]" id="previewBox">Ketik nama dulu...</div>
 <button onclick="saveApp()" class="w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black">💾 SIMPAN KE FIREBASE KASIH-KOPDES</button>
 <button onclick="closeAdd()" class="w-full bg-slate-100 py-2 rounded-full text-[11px]">Batal</button>
 </div>
 </div>
 </div>
 
+<!-- MODAL KATEGORI -->
+<div id="modalKat" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center p-3">
+<div class="bg-white rounded-[24px] w-full max-w-[400px] p-6">
+<h2 class="font-black text-[14px]">✏️ Ganti Nama Kategori</h2>
+<div id="listKatEdit" class="mt-4 space-y-2"></div>
+<button onclick="closeKat()" class="w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black mt-4">Tutup</button>
+</div>
+</div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
 const firebaseConfig = {
  apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
@@ -63,92 +70,144 @@ const firebaseConfig = {
  appId: "1:746954171317:web:bcd6196a24b420c4ce2ffc",
  measurementId: "G-S6BWGE6YBX"
 };
-
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getDatabase(app);
-document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes - Realtime Database';
+const appFB = initializeApp(firebaseConfig);
+const db = getDatabase(appFB);
 
 let katAktif='semua';
 let allApps=[];
-
+let katNames={keuangan:'💰 Keuangan', umkm:'🏭 UMKM', toko:'🏪 Toko', dokumen:'📄 Dokumen'};
+const bulanUrutan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 const gambarBank={
- keuangan:["https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=600","https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600","https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600"],
- umkm:["https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600","https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=600","https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600"],
- toko:["https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600","https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600","https://images.unsplash.com/photo-1557821552-17105176677c?w=600"],
- dokumen:["https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600","https://images.unsplash.com/photo-1542744173-8e7e53415bb4?w=600","https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600"]
+ keuangan:["https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=600","https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600"],
+ umkm:["https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600","https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=600"],
+ toko:["https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600","https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=600"],
+ dokumen:["https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600","https://images.unsplash.com/photo-1542744173-8e7e53415bb4?w=600"]
 };
+
+function getBulanHP(){
+ let raw=new Date().toLocaleString('id-ID',{month:'long'});
+ return raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase(); // Oktober
+}
+let targetBulan=getBulanHP();
+document.getElementById('fbStatus').innerText='✅ Connected: kasih-kopdes';
+document.getElementById('prioritasInfo').innerText=`📅 Hari ini: ${targetBulan} → LK ${targetBulan} otomatis di atas`;
+document.getElementById('infoPrioritas').innerText=`🔥 Prioritas: ${targetBulan} (bulan HP) → paling atas`;
 
 function autoKategori(nama){
  let n=nama.toLowerCase();
- if(n.includes('duit')||n.includes('keuangan')||n.includes('catat')||n.includes('uang')||n.includes('dompet')||n.includes('saldo')) return 'keuangan';
- if(n.includes('umkm')||n.includes('produksi')||n.includes('analisis')||n.includes('banding')) return 'umkm';
- if(n.includes('toko')||n.includes('sop')||n.includes('gerai')||n.includes('pasar')||n.includes('stok')||n.includes('validasi')) return 'toko';
- if(n.includes('proposal')||n.includes('dokumen')||n.includes('rab')||n.includes('laporan')||n.includes('business')) return 'dokumen';
+ if(n.includes('duit')||n.includes('keuangan')||n.includes('dompet')) return 'keuangan';
+ if(n.includes('umkm')||n.includes('produksi')||n.includes('analisis')) return 'umkm';
+ if(n.includes('toko')||n.includes('sop')||n.includes('pasar')||n.includes('lk')||n.includes('validasi')||n.includes('gerai')) return 'toko';
+ if(n.includes('proposal')||n.includes('dokumen')||n.includes('laporan')||n.includes('rab')) return 'dokumen';
  return 'toko';
+}
+function autoBulan(nama){
+ let n=nama.toLowerCase();
+ for(let b of bulanUrutan){ if(n.includes(b.toLowerCase())) return b; }
+ return '';
 }
 function autoGambar(kat){ let arr=gambarBank[kat]||gambarBank['toko']; return arr[Math.floor(Math.random()*arr.length)]; }
 
-const appsRef=ref(db, 'portal_apps');
-onValue(appsRef, (snap)=>{
+function hitungPrioritas(app){
+ let skor=100;
+ if(app.bulan){
+  let idxTarget=bulanUrutan.indexOf(targetBulan);
+  let idxApp=bulanUrutan.indexOf(app.bulan);
+  if(idxApp>=0 && idxTarget>=0){
+   let selisih=(idxApp-idxTarget+12)%12;
+   skor=selisih;
+  }
+ }
+ let manual=parseInt(app.prioritas||99);
+ return skor*10+manual;
+}
+
+onValue(ref(db,'kategori_names'), snap=>{
+ let val=snap.val(); if(val){ katNames={...katNames,...val}; }
+ renderKatButtons(); render();
+});
+onValue(ref(db,'portal_apps'), snap=>{
  allApps=[]; let data=snap.val();
  if(data){ Object.keys(data).forEach(k=>{ allApps.push({id:k, ...data[k]}); }); }
  render();
 });
 
+window.renderKatButtons=()=>{
+ let html=`<button onclick="setKat('semua')" id="kat-semua" class="kat-active px-5 py-3 rounded-full text-[11px] font-bold border">Semua</button>`;
+ Object.keys(katNames).forEach(k=>{ html+=`<button onclick="setKat('${k}')" id="kat-${k}" class="px-5 py-3 rounded-full text-[11px] font-bold border bg-white">${katNames[k]}</button>`; });
+ document.getElementById('katContainer').innerHTML=html;
+ let sel=document.getElementById('fKat');
+ if(sel){ sel.innerHTML=Object.keys(katNames).map(k=>`<option value="${k}">${katNames[k]}</option>`).join('')+`<option value="auto">🤖 Auto Detect</option>`; }
+}
+
 window.render=()=>{
  let q=document.getElementById('search').value.toLowerCase();
- let filtered=allApps.filter(a=>{
+ let filtered=[...allApps].filter(a=>{
   let cocokKat=katAktif=='semua'||a.kat==katAktif;
-  let cocokSearch=(a.nama||'').toLowerCase().includes(q)||(a.desc||'').toLowerCase().includes(q)||(a.kat||'').includes(q);
+  let cocokSearch=(a.nama||'').toLowerCase().includes(q)||(a.desc||'').toLowerCase().includes(q)||(a.bulan||'').toLowerCase().includes(q);
   return cocokKat&&cocokSearch;
  });
- document.getElementById('empty').style.display=filtered.length==0&&allApps.length==0?'block':'none';
- document.getElementById('grid').innerHTML=filtered.map(a=>`
- <div class="card bg-white overflow-hidden border">
-  <div class="h-[150px] relative"><img src="${a.img}" class="w-full h-full object-cover"><div class="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-[9px] font-bold">🔥 ${a.kat.toUpperCase()}</div><div class="absolute bottom-3 left-3 bg-black/70 text-white px-3 py-1 rounded-full text-[10px]">${a.icon||'🚀'} ${a.nama.substring(0,24)}</div></div>
-  <div class="p-4">
-   <b class="text-[13px]">${a.nama}</b><p class="text-[11px] text-slate-500 mt-1">${a.desc}</p>
-   <div class="grid grid-cols-[1fr_auto] gap-2 mt-4"><a href="${a.link}" target="_blank" class="bg-[#BE1E2D] text-white text-center py-3 rounded-full text-[11px] font-black">🚀 BUKA APP</a><button onclick="hapusApp('${a.id}')" class="bg-slate-100 px-4 rounded-full text-[11px]">🗑️</button></div>
-   <p class="text-[9px] text-slate-400 mt-2 truncate">${a.link}</p>
-  </div>
- </div>`).join('');
+ filtered.sort((a,b)=>{
+  let pa=hitungPrioritas(a); let pb=hitungPrioritas(b);
+  if(pa!=pb) return pa-pb;
+  return (b.created||0)-(a.created||0);
+ });
+
+ document.getElementById('grid').innerHTML=filtered.map(a=>{
+  let isBulanIni=(a.bulan||'')==targetBulan;
+  return `<div class="card bg-white overflow-hidden border ${isBulanIni?'ring-2 ring-[#BE1E2D] shadow-lg':''}">
+   <div class="h-[150px] relative"><img src="${a.img}" class="w-full h-full object-cover"><div class="absolute top-2 left-2 flex gap-1 flex-wrap"><span class="bg-white/90 px-2 py-1 rounded-full text-[9px] font-bold">${(katNames[a.kat]||a.kat).toUpperCase()}</span>${a.bulan?`<span class="bg-yellow-400 px-2 py-1 rounded-full text-[9px] font-bold">📅 ${a.bulan.toUpperCase()}</span>`:''}${isBulanIni?'<span class="bg-[#BE1E2D] text-white px-2 py-1 rounded-full text-[9px] font-bold">🔥 BULAN INI</span>':''}</div><div class="absolute bottom-2 left-2 bg-black/70 text-white px-3 py-1 rounded-full text-[10px]">${a.icon||'🚀'} ${a.nama.substring(0,26)}</div></div>
+   <div class="p-4"><b class="text-[13px]">${a.nama}</b><p class="text-[11px] text-slate-500 mt-1">${a.desc}</p><div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-3"><a href="${a.link}" target="_blank" class="bg-[#BE1E2D] text-white text-center py-3 rounded-full text-[11px] font-black">🚀 BUKA</a><button onclick="editApp('${a.id}')" class="bg-slate-100 px-3 rounded-full text-[11px]">✏️</button><button onclick="hapusApp('${a.id}')" class="bg-slate-100 px-3 rounded-full text-[11px]">🗑️</button></div></div>
+  </div>`;
+ }).join('')||'<p class="col-span-3 text-center py-10 text-slate-400 text-[12px]">Belum ada. Klik + TAMBAH, tulis "LK Oktober" → otomatis di atas</p>';
 }
 
 window.setKat=(k)=>{
  katAktif=k;
  document.querySelectorAll('[id^=kat-]').forEach(b=>b.className='px-5 py-3 rounded-full text-[11px] font-bold border bg-white');
- document.getElementById('kat-'+k).className='kat-active px-5 py-3 rounded-full text-[11px] font-bold border';
+ let el=document.getElementById('kat-'+k); if(el) el.className='kat-active px-5 py-3 rounded-full text-[11px] font-bold border';
  render();
 }
+let editId=null;
 window.openAdd=()=>{
+ editId=null;
  document.getElementById('modal').classList.remove('hidden');
+ document.getElementById('fNama').value=''; document.getElementById('fLink').value=''; document.getElementById('fDesc').value=''; document.getElementById('fPrior').value='99';
  document.getElementById('fNama').oninput=()=>{
-  let nama=document.getElementById('fNama').value; let kat=autoKategori(nama);
-  document.getElementById('previewKat').innerText='Kategori auto: '+kat.toUpperCase();
-  document.getElementById('previewImg').innerText='Gambar auto: '+kat+' (random menarik)';
+  let nama=document.getElementById('fNama').value;
+  let kat=autoKategori(nama); let bulan=autoBulan(nama)||targetBulan;
+  document.getElementById('previewBox').innerHTML=`Kategori auto: <b>${katNames[kat]||kat}</b><br>Bulan auto: <b>${bulan||'Tanpa bulan'}</b><br>${bulan==targetBulan?'✅ Akan di paling atas karena bulan ini':''}`;
  };
 }
 window.closeAdd=()=>document.getElementById('modal').classList.add('hidden');
-
+window.editApp=(id)=>{
+ let a=allApps.find(x=>x.id==id); if(!a) return; editId=id;
+ document.getElementById('modal').classList.remove('hidden');
+ document.getElementById('fNama').value=a.nama; document.getElementById('fLink').value=a.link; document.getElementById('fDesc').value=a.desc; document.getElementById('fPrior').value=a.prioritas||99; document.getElementById('fBulan').value=a.bulan||'auto';
+}
 window.saveApp=async()=>{
- let nama=document.getElementById('fNama').value.trim();
- let link=document.getElementById('fLink').value.trim();
- let desc=document.getElementById('fDesc').value.trim();
- if(!nama||!link) return alert('Isi nama & link dulu Mas');
- let katPilih=document.getElementById('fKat').value;
- let kat=katPilih=='auto'?autoKategori(nama):katPilih;
- let imgPilih=document.getElementById('fImg').value;
- let img=imgPilih=='auto'?autoGambar(kat):autoGambar(imgPilih);
+ let nama=document.getElementById('fNama').value.trim(); let link=document.getElementById('fLink').value.trim(); let desc=document.getElementById('fDesc').value.trim();
+ if(!nama||!link) return alert('Isi nama & link');
+ let katSel=document.getElementById('fKat').value; let kat=katSel=='auto'?autoKategori(nama):katSel;
+ let bulanSel=document.getElementById('fBulan').value; let bulan=bulanSel=='auto'?autoBulan(nama):bulanSel;
+ let prior=document.getElementById('fPrior').value||99; let imgSel=document.getElementById('fImg').value; let img=imgSel=='auto'?autoGambar(kat):autoGambar(imgSel);
  let icon=kat=='keuangan'?'💰':kat=='umkm'?'🏭':kat=='toko'?'🏪':'📄';
- await push(appsRef, {nama, link, desc:desc||'Aplikasi KDKMP Kasih', kat, img, icon, created:Date.now()});
+ if(editId){ await update(ref(db,'portal_apps/'+editId), {nama, link, desc, kat, bulan, prioritas:parseInt(prior), img, icon}); }
+ else { await push(ref(db,'portal_apps'), {nama, link, desc, kat, bulan:bulan||'', prioritas:parseInt(prior), img, icon, created:Date.now()}); }
  closeAdd();
- document.getElementById('fNama').value=''; document.getElementById('fLink').value=''; document.getElementById('fDesc').value='';
 }
-
-window.hapusApp=async(id)=>{
- if(confirm('Hapus link ini?')) await remove(ref(db, 'portal_apps/'+id));
+window.hapusApp=async(id)=>{ if(confirm('Hapus?')) await remove(ref(db,'portal_apps/'+id)); }
+window.openKat=()=>{
+ document.getElementById('modalKat').classList.remove('hidden');
+ document.getElementById('listKatEdit').innerHTML=Object.keys(katNames).map(k=>`<div class="flex gap-2 items-center"><span class="text-[11px] w-[80px]">${k}</span><input id="katname-${k}" value="${katNames[k]}" class="input flex-1"><button onclick="saveKatName('${k}')" class="bg-slate-900 text-white px-3 py-2 rounded-full text-[10px]">Save</button></div>`).join('');
 }
+window.closeKat=()=>document.getElementById('modalKat').classList.add('hidden');
+window.saveKatName=async(k)=>{
+ let newName=document.getElementById('katname-'+k).value;
+ await update(ref(db,'kategori_names'), {[k]:newName});
+ katNames[k]=newName; renderKatButtons();
+}
+renderKatButtons();
 </script>
 </body>
 </html>
