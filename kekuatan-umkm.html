@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMKM V5.3 FULL - JENIS CUSTOM + LAMA TANGGAL + OMZET KOMA</title>
+<style>
+body{font-family:system-ui; background:#f6f5f2; margin:0; padding:0; font-size:13px}
+.header{background:#BE1E2D; color:white; padding:12px; position:sticky; top:0; z-index:20}
+.btn{border:none; border-radius:999px; padding:11px 16px; font-weight:800; font-size:11px; cursor:pointer; margin:3px; display:inline-block}
+.btn-white{background:white; color:#BE1E2D}
+.btn-black{background:black; color:white}
+.btn-yellow{background:#facc15; color:black}
+.btn-green{background:#16a34a; color:white}
+.btn-blue{background:#2563eb; color:white}
+.card{background:white; border-radius:18px; padding:14px; margin:8px 0; box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.input{border:1px solid #ddd; border-radius:12px; padding:10px; width:100%; box-sizing:border-box; margin:4px 0; font-size:12px; background:white}
+.label{font-size:8px; font-weight:800; color:#BE1E2D; text-transform:uppercase; margin-top:6px}
+#modalForm{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; z-index:99; overflow:auto; padding:10px}
+.modalbox{background:white; border-radius:20px; max-width:1100px; margin:10px auto; overflow:hidden}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.badge{font-size:9px; padding:3px 8px; border-radius:999px; display:inline-block; margin:2px}
+.risk-tinggi{background:#fee2e2; color:#991b1b}
+.risk-sedang{background:#fef9c3; color:#854d0e}
+.risk-rendah{background:#dcfce7; color:#166534}
+.proposal-page{background:white; padding:20px; line-height:1.6}
+.preview-hint{font-size:10px; color:#16a34a; font-weight:700; margin-top:2px}
+</style>
+</head>
+<body>
+<div class="header">
+<b>🏭 UMKM V5.3 FULL - JENIS CUSTOM + LAMA TANGGAL + OMZET KOMA</b>
+<p id="fbStatus" style="font-size:10px; margin:6px 0; background:rgba(0,0,0,.3); padding:6px 10px; border-radius:8px">📱 Mode Lokal - Tombol onclick PASTI KLIK - Firebase background</p>
+<div>
+<button class="btn btn-white" onclick="openTambah()">+ Tambah UMKM</button>
+<button class="btn btn-black" onclick="setTab('arsip')">📚 Arsip + Analisis Panjang</button>
+<button class="btn btn-yellow" onclick="setTab('banding')">⚖️ Banding</button>
+<button class="btn btn-green" onclick="setTab('laporan')">📄 Laporan Custom</button>
+<button class="btn btn-blue" onclick="setTab('proposal')">📑 Proposal Bisnis</button>
+</div>
+</div>
 
+<div style="max-width:1400px; margin:0 auto; padding:10px">
+<div id="view-arsip">
+<div class="card"><b>📚 Arsip UMKM - Klik Analisis Panjang untuk penjelasan lengkap</b><div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap"><input id="search" class="input" style="flex:1" placeholder="Cari UMKM..." oninput="renderArsip()"><select id="filterJenis" class="input" style="width:140px" onchange="renderArsip()"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Fashion</option><option>Frozen Food</option><option>Lainnya</option></select></div><div id="listArsip" style="margin-top:12px; display:grid; gap:12px"></div></div>
+<div id="detailPanjang" class="card" style="display:none"></div>
+</div>
+
+<div id="view-banding" style="display:none">
+<div class="card"><b>⚖️ Banding 2-3 UMKM</b><div id="selectedBanding" style="margin-top:10px"></div><button class="btn" style="background:#BE1E2D; color:white; width:100%; margin-top:10px" onclick="bandingkan()">BANDINGKAN SEKARANG</button><div id="ranking" style="margin-top:10px"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px"><canvas id="compareChart" height="200"></canvas><canvas id="compareLabaChart" height="200"></canvas></div></div>
+</div>
+
+<div id="view-laporan" style="display:none">
+<div class="card">
+<b>📄 Laporan Custom - Pilih 1 atau Beberapa UMKM</b>
+<div style="display:grid; grid-template-columns:260px 1fr; gap:12px; margin-top:10px">
+<div style="border:1px solid #eee; border-radius:12px; padding:10px; max-height:500px; overflow:auto">
+<b style="font-size:11px">1. PILIH UMKM:</b><br><button class="btn" style="font-size:9px; background:#eee" onclick="selectAllLaporan(true)">Pilih Semua</button><button class="btn" style="font-size:9px; background:#eee" onclick="selectAllLaporan(false)">Hapus</button>
+<div id="listLaporanCheck" style="margin-top:8px"></div>
+<hr style="margin:10px 0">
+<b style="font-size:11px">2. OPSI:</b><br>
+<label style="font-size:11px"><input type="checkbox" id="optAnalisisLengkap" checked onchange="renderLaporan()"> Pakai Analisis Lengkap</label><br>
+<label style="font-size:11px"><input type="checkbox" id="optGrafik" checked onchange="renderLaporan()"> Tampilkan Grafik</label><br>
+<label style="font-size:11px"><input type="checkbox" id="optResiko" checked onchange="renderLaporan()"> Tampilkan Resiko</label><br><br>
+<button class="btn btn-green" onclick="renderLaporan()" style="width:100%">🔄 Buat Laporan</button>
+</div>
+<div>
+<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px"><button class="btn" style="background:#dc2626; color:white" onclick="downloadLaporanJPG()">🖼️ JPG</button><button class="btn" style="background:#16a34a; color:white" onclick="downloadLaporanExcel()">📊 Excel + Analisis</button></div>
+<div id="laporanPreview" style="background:white; border:2px solid #eee; border-radius:16px; padding:16px">
+<div style="text-align:center; border-bottom:3px solid #BE1E2D; padding-bottom:12px"><b style="font-size:14px">LAPORAN UMKM DESA KASIH - KERTANEGARA</b><br><span style="font-size:10px" id="tglLaporan"></span><div style="margin-top:8px; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; font-size:10px"><div style="background:#f3f4f6; padding:8px; border-radius:10px"><b id="lpTotal">0</b><br>Total</div><div style="background:#fee2e2; padding:8px; border-radius:10px"><b id="lpResiko">0</b><br>Resiko Tinggi</div><div style="background:#dcfce7; padding:8px; border-radius:10px"><b id="lpLaba">Rp 0</b><br>Total Laba</div><div style="background:#dbeafe; padding:8px; border-radius:10px"><b id="lpPotensi">Rp 0</b><br>Total Potensi</div></div></div>
+<div id="laporanGrafik" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px"><canvas id="chartLaba" height="200"></canvas><canvas id="chartResiko" height="200"></canvas></div>
+<div id="laporanIsi"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="view-proposal" style="display:none">
+<div class="card">
+<b>📑 Proposal Bisnis - Pilih 1 UMKM</b>
+<div style="display:grid; grid-template-columns:260px 1fr; gap:12px; margin-top:10px">
+<div style="border:1px solid #eee; border-radius:12px; padding:10px; max-height:500px; overflow:auto">
+<div id="listProposalCheck"></div>
+<button class="btn btn-blue" onclick="buatProposal()" style="width:100%; margin-top:10px">📝 Buat Proposal Lengkap</button>
+</div>
+<div>
+<div style="display:flex; gap:6px; margin-bottom:8px"><button class="btn" style="background:#dc2626; color:white" onclick="downloadProposalJPG()">📄 Proposal JPG HD</button></div>
+<div id="proposalPreview" class="proposal-page" style="border:2px solid #eee; border-radius:16px; min-height:400px"><p style="text-align:center; color:#999; padding:80px 20px">Pilih 1 UMKM di kiri → Buat Proposal Lengkap → Jadi dokumen 4 halaman siap print</p></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="modalForm">
+<div class="modalbox">
+<div style="background:#BE1E2D; color:white; padding:14px; display:flex; justify-content:space-between"><b id="modalTitle">+ Tambah UMKM</b><button class="btn" style="background:rgba(255,255,255,.2); color:white" onclick="closeModal()">✕</button></div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:0">
+<div style="padding:14px; max-height:85vh; overflow:auto" id="modalBody"></div>
+<div style="background:#faf8f5; padding:14px; border-left:1px solid #eee; max-height:85vh; overflow:auto"><b style="font-size:12px; color:#BE1E2D">📊 ANALISIS LIVE + PANJANG</b><div id="liveAnalisis" style="margin-top:10px"></div></div>
+</div>
+<div style="padding:12px; display:flex; gap:8px; border-top:1px solid #eee"><button class="btn" style="flex:1; background:#eee" onclick="closeModal()">Batal</button><button class="btn" style="flex:1; background:#BE1E2D; color:white" onclick="saveData()">💾 Simpan</button></div>
+</div>
+</div>
+
+<script>
+let umkms=[], selectedIds=[], selectedLaporanIds=[], selectedProposalId=null, currentEditId=null, isFirebase=false, umkmRef=null;
+let compareChart=null, compareLabaChart=null, chartLaba=null, chartResiko=null;
+
+function parseJt(val){
+ if(val==null || val==='') return 0;
+ let s=String(val).toLowerCase().replace(/\s/g,'').replace('jt','').replace('juta','').trim();
+ let isRb=s.includes('rb')||String(val).toLowerCase().includes('rb');
+ s=s.replace('rb','').replace(',','.').replace('..','.'); 
+ let num=parseFloat(s);
+ if(isNaN(num)) return 0;
+ if(isRb) return num/1000;
+ return num;
+}
+function formatRpJt(jt){ 
+ if(jt==0) return 'Rp 0';
+ if(jt<1) return 'Rp '+(jt*1000).toLocaleString('id-ID')+' ribu';
+ return 'Rp '+jt.toLocaleString('id-ID')+' jt = Rp '+(jt*1000000).toLocaleString('id-ID');
+}
+
+function calcFull(d){
+ let now=parseFloat(d.prod_now)||0, max=parseFloat(d.prod_max)||1, harga=parseFloat(d.harga)||0, bahan=parseFloat(d.bahan_cost)||0, pel=parseFloat(d.pelanggan)||10, omzet=parseJt(d.omzet)||0, modal=parseJt(d.modal)||5, sdm=parseFloat(d.sdm)||2, alat=parseFloat(d.alat)||1, jam=parseFloat(d.jam)||8, lama=parseFloat(d.lama)||2;
+ let utilisasi = max>0 ? Math.min(100, Math.round(now/max*100)) : 0;
+ let kapasitas_kosong = Math.max(0, max-now);
+ let omzet_per_pcs = harga>0?harga:20000;
+ let potensi = kapasitas_kosong * omzet_per_pcs * 26 /1000000;
+ let biaya_bahan = bahan * now * 26 /1000000;
+ let biaya_ops = modal*0.05 + sdm*1.2;
+ let laba = omzet - biaya_bahan - biaya_ops;
+ let margin = harga>0? Math.round((harga-bahan)/harga*100):0;
+ let total = Math.min(100, Math.round((utilisasi*0.4)+(pel>5?15:pel*2)+(margin>0?margin*0.3:0)+25+(lama>3?10:lama*2)));
+ let status = total>=80?'LAYAK UTAMA':total>=60?'CUKUP':'BELUM';
+ let risks=[];
+ if(harga>0 && bahan/harga>0.7) risks.push({t:'Bahan Baku', l:'tinggi', d:`Bahan ${Math.round(bahan/harga*100)}% dari harga - margin tipis ${margin}%`, m:'Cari supplier alternatif di Purbalingga, nego grosir, atau naikkan harga 10-15%'});
+ else if(harga>0 && bahan/harga>0.5) risks.push({t:'Bahan Baku', l:'sedang', d:`Bahan ${Math.round(bahan/harga*100)}% - margin ${margin}%`, m:'Jaga stok 2 minggu, kontrak harga supplier'});
+ else risks.push({t:'Bahan Baku', l:'rendah', d:`Margin ${margin}% bagus`, m:'Pertahankan supplier, beli musiman saat murah'});
+ if(pel<5) risks.push({t:'Pasar', l:'tinggi', d:`Pelanggan tetap hanya ${pel} orang - rawan sepi`, m:'Aktifkan WA pelanggan, titip 5 warung Kopdes, ikut bazaar desa'});
+ else if(pel<15) risks.push({t:'Pasar', l:'sedang', d:`Pelanggan ${pel} - cukup`, m:'Buat promo bundling, minta testimoni'});
+ else risks.push({t:'Pasar', l:'rendah', d:`Pelanggan ${pel} loyal`, m:'Jaga kualitas, program referal, masuk Shopee'});
+ if(utilisasi<40) risks.push({t:'Operasional', l:'tinggi', d:`Utilisasi ${utilisasi}% - nganggur ${kapasitas_kosong} pcs/hari`, m:'Terima custom order, sewa alat saat kosong'});
+ else if(utilisasi<70) risks.push({t:'Operasional', l:'sedang', d:`Utilisasi ${utilisasi}%`, m:'Tambah SDM paruh waktu kejar 80%'});
+ else risks.push({t:'Operasional', l:'rendah', d:`Utilisasi ${utilisasi}% optimal`, m:'Siap tambah alat baru'});
+ if(laba<0) risks.push({t:'Keuangan', l:'tinggi', d:`Rugi Rp ${laba.toFixed(1)}jt/bulan`, m:'Potong operasional, naik harga 15%, stop varian rugi'});
+ else if(laba<3) risks.push({t:'Keuangan', l:'sedang', d:`Laba tipis Rp ${laba.toFixed(1)}jt`, m:'Naikkan produksi 20% kejar BEP'});
+ else risks.push({t:'Keuangan', l:'rendah', d:`Laba sehat Rp ${laba.toFixed(1)}jt`, m:'Sisihkan 20% laba tabung modal'});
+
+ let high = risks.filter(r=>r.l=='tinggi').length;
+ let level = high>=2?'tinggi':high==1?'sedang':'rendah';
+ let prediksi6 = (omzet+potensi)*6;
+ let narasi = `<b>1. KONDISI SAAT INI:</b><br>UMKM ${d.nama||'ini'} jenis ${d.jenis||'-'} (${d.lama_label||d.lama+' tahun'}). Produksi ${now} pcs/hari dari kapasitas ${max} pcs/hari (utilisasi ${utilisasi}%). Dengan ${alat} alat, ${sdm} SDM, ${jam} jam/hari, omzet ${formatRpJt(omzet)}/bulan, harga Rp ${harga.toLocaleString()}/pcs, bahan Rp ${bahan.toLocaleString()}/pcs, margin ${margin}%, laba Rp ${laba.toFixed(1)}jt/bulan, pelanggan ${pel} orang.<br><br><b>2. MASALAH UTAMA:</b><br>Skor ${total}/100 (${status}). ${utilisasi<50?`Utilisasi rendah ${utilisasi}% - ada ${kapasitas_kosong} pcs/hari kosong, potensi hilang Rp ${potensi.toFixed(1)}jt/bulan.`:`Utilisasi ${utilisasi}% cukup baik.`} ${margin<30?` Margin tipis ${margin}% karena bahan ${harga>0?Math.round(bahan/harga*100):0}% dari harga.`:` Margin ${margin}% aman.`} ${pel<10?` Pelanggan hanya ${pel} orang, rawan sepi.`:` Pelanggan ${pel} loyal.`} ${laba<0?` Saat ini rugi Rp ${Math.abs(laba).toFixed(1)}jt/bulan.`:` Laba Rp ${laba.toFixed(1)}jt perlu ditingkatkan.`}<br><br><b>3. SARAN 6 BULAN:</b><br>Bulan 1-2: Atasi resiko tinggi - ${risks.filter(r=>r.l=='tinggi').map(r=>r.t).join(', ')||'optimasi produksi'}. Bulan 3-4: Naikkan produksi jadi ${Math.ceil(max*0.8)} pcs/hari kejar 80%, potensi Rp ${potensi.toFixed(1)}jt bisa tercapai. Bulan 5-6: Jika skor 80+, ajukan Mitra Utama Kopdes (NIB, PIRT, Halal). Prediksi 6 bulan total Rp ${prediksi6.toFixed(1)}jt.`;
+ return {total, utilisasi, potensi, laba, margin, biaya_bahan, kapasitas_kosong, status, risks, level, high, prediksi6, omzet, nama:d.nama, jenis:d.jenis, pel, max, now, harga, bahan, narasi, lama, lama_label:d.lama_label||d.lama+' tahun'};
+}
+
+function getModalHTML(d){
+ let data=d||{nama:'', jenis:'Makanan', jenis_custom:'', lama:'2', lama_label:'1 - 2 tahun', lama_tgl:'', prod_now:'', prod_max:'', alat:'1', sdm:'2', jam:'8', modal:'5', omzet:'', harga:'', bahan_cost:'', pelanggan:'10', alamat:''};
+ return `<div><p class="label">Nama UMKM *</p><input id="m_nama" class="input" value="${data.nama}" oninput="renderLive()"></div>
+ <div><p class="label">Jenis Usaha * - Pilih Lainnya untuk isi sendiri</p>
+ <select id="m_jenis" class="input" onchange="handleJenisChange(); renderLive()">
+ <option ${data.jenis=='Makanan'?'selected':''}>Makanan</option>
+ <option ${data.jenis=='Minuman'?'selected':''}>Minuman</option>
+ <option ${data.jenis=='Kerajinan'?'selected':''}>Kerajinan</option>
+ <option ${data.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option>
+ <option ${data.jenis=='Jasa'?'selected':''}>Jasa</option>
+ <option ${data.jenis=='Fashion'?'selected':''}>Fashion</option>
+ <option ${data.jenis=='Frozen Food'?'selected':''}>Frozen Food</option>
+ <option ${data.jenis=='Herbal / Jamu'?'selected':''}>Herbal / Jamu</option>
+ <option ${data.jenis_asli=='Lainnya'?'selected':''}>Lainnya (isi sendiri)</option>
+ </select>
+ <input id="m_jenis_custom" class="input" placeholder="Tulis jenis sendiri, contoh: Sambal Kemasan, Minuman Herbal..." value="${data.jenis_custom||''}" style="display:${data.jenis_asli=='Lainnya'?'block':'none'}; margin-top:6px; border:2px solid #BE1E2D" oninput="renderLive()">
+ </div>
+ <div><p class="label">Lama Usaha * - Banyak pilihan + bisa tanggal</p>
+ <select id="m_lama" class="input" onchange="handleLamaChange(); renderLive()">
+ <option value="0.25" ${data.lama=='0.25'?'selected':''}>< 6 bulan (Baru mulai)</option>
+ <option value="0.75" ${data.lama=='0.75'?'selected':''}>6 - 12 bulan</option>
+ <option value="1.5" ${data.lama=='1.5'?'selected':''}>1 - 2 tahun</option>
+ <option value="2.5" ${data.lama=='2.5'?'selected':''}>2 - 3 tahun</option>
+ <option value="4" ${data.lama=='4'?'selected':''}>3 - 5 tahun</option>
+ <option value="7" ${data.lama=='7'?'selected':''}>5 - 10 tahun</option>
+ <option value="12" ${data.lama=='12'?'selected':''}>> 10 tahun</option>
+ <option value="custom" ${data.lama_label&&data.lama_label.includes('Sejak')?'selected':''}>📅 Pilih Tanggal Spesifik Mulai Usaha</option>
+ </select>
+ <div id="wrap_tgl" style="display:${data.lama_label&&data.lama_label.includes('Sejak')?'block':'none'}; margin-top:6px">
+ <input id="m_lama_tgl" type="date" class="input" value="${data.lama_tgl||''}" onchange="hitungLamaDariTanggal()" style="border:2px solid #BE1E2D">
+ <p style="font-size:10px; color:#666; margin:4px 0 0">Hasil hitung: <b id="hasil_hitung_tgl">${data.lama_label||''}</b></p>
+ </div>
+ <input type="hidden" id="m_lama_final" value="${data.lama}">
+ <input type="hidden" id="m_lama_label_final" value="${data.lama_label||''}">
+ </div>
+ <div class="grid2"><div><p class="label">Prod Sekarang /hari</p><input id="m_prod_now" type="number" class="input" value="${data.prod_now}" oninput="renderLive()"></div><div><p class="label">Maks /hari</p><input id="m_prod_max" type="number" class="input" value="${data.prod_max}" oninput="renderLive()"></div></div>
+ <div class="grid2"><div><p class="label">Alat</p><input id="m_alat" type="number" class="input" value="${data.alat}" oninput="renderLive()"></div><div><p class="label">SDM</p><input id="m_sdm" type="number" class="input" value="${data.sdm}" oninput="renderLive()"></div></div>
+ <div class="grid2"><div><p class="label">Jam Kerja</p><input id="m_jam" type="number" class="input" value="${data.jam}" oninput="renderLive()"></div><div><p class="label">Harga Jual /pcs Rp</p><input id="m_harga" type="number" class="input" value="${data.harga||''}" oninput="renderLive()"></div></div>
+ <div class="grid2"><div><p class="label">Biaya Bahan /pcs Rp</p><input id="m_bahan_cost" type="number" class="input" value="${data.bahan_cost||''}" oninput="renderLive()"></div><div><p class="label">Omzet jt/bln</p><input id="m_omzet" type="text" inputmode="decimal" class="input" value="${data.omzet}" placeholder="Contoh: 1.5 atau 1,5 atau 500rb" oninput="renderLive()"><div id="preview_omzet" class="preview-hint"></div></div></div>
+ <div class="grid2"><div><p class="label">Modal jt/bln</p><input id="m_modal" type="text" inputmode="decimal" class="input" value="${data.modal}" placeholder="Contoh: 5 atau 0.5" oninput="renderLive()"><div id="preview_modal" class="preview-hint"></div></div><div><p class="label">Pelanggan Tetap</p><input id="m_pelanggan" type="number" class="input" value="${data.pelanggan}" oninput="renderLive()"></div></div>
+ <div><p class="label">Alamat / HP</p><input id="m_alamat" class="input" value="${data.alamat||''}"></div>`;
+}
+
+function handleJenisChange(){ let j=document.getElementById('m_jenis').value; document.getElementById('m_jenis_custom').style.display=j=='Lainnya (isi sendiri)'||j=='Lainnya'?'block':'none'; if(j!='Lainnya (isi sendiri)' && j!='Lainnya') document.getElementById('m_jenis_custom').value=''; }
+function handleLamaChange(){ let l=document.getElementById('m_lama').value; let isCustom=l=='custom'; document.getElementById('wrap_tgl').style.display=isCustom?'block':'none'; if(!isCustom){ document.getElementById('m_lama_final').value=l; let txt=document.getElementById('m_lama').options[document.getElementById('m_lama').selectedIndex].text; document.getElementById('m_lama_label_final').value=txt; } }
+function hitungSelisihTahun(tgl){ if(!tgl) return 0; let start=new Date(tgl); let now=new Date(); let diff=(now-start)/(1000*60*60*24*365); return diff.toFixed(1); }
+function hitungLamaDariTanggal(){ let tgl=document.getElementById('m_lama_tgl').value; if(!tgl) return; let th=hitungSelisihTahun(tgl); document.getElementById('hasil_hitung_tgl').innerText=`Sejak ${tgl} (${th} tahun)`; document.getElementById('m_lama_final').value=th; document.getElementById('m_lama_label_final').value=`Sejak ${tgl} (${th} th)`; renderLive(); }
+
+function renderLive(){
+ let d={
+  nama: document.getElementById('m_nama')?.value||'UMKM Baru',
+  jenis: (()=>{ let s=document.getElementById('m_jenis')?.value||'Makana
