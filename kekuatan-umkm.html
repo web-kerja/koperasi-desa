@@ -2,63 +2,50 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UMKM V4.8 PRO PLUS - ANALISIS + RESIKO</title>
+<title>UMKM V4.9 FIX REALTIME + ANALISIS + RESIKO</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>.input{border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; font-size:11px; width:100%; background:white} .label{font-size:8px; font-weight:800; color:#BE1E2D; text-transform:uppercase} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .btn{cursor:pointer} .analisis{font-size:11px; line-height:1.5} .risk-low{background:#dcfce7; color:#166534; border:1px solid #bbf7d0} .risk-med{background:#fef9c3; color:#854d0e; border:1px solid #fde68a} .risk-high{background:#fee2e2; color:#991b1b; border:1px solid #fecaca}</style>
+<style>.input{border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; font-size:11px; width:100%; background:white} .label{font-size:8px; font-weight:800; color:#BE1E2D; text-transform:uppercase} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .btn{cursor:pointer; pointer-events:auto} .analisis{font-size:11px; line-height:1.5}</style>
 </head>
 <body class="bg-[#f6f5f2] pb-28">
-<div class="bg-[#BE1E2D] text-white p-3 sticky top-0 z-40">
+<div class="bg-[#BE1E2D] text-white p-3 sticky top-0 z-[40]">
 <div class="max-w-[1800px] mx-auto flex justify-between flex-wrap gap-2">
-<div><b class="text-[13px]">🏭 UMKM V4.8 PRO PLUS - RESIKO + LABA + PREDIKSI</b><p class="text-[9px] mt-1" id="fbStatus">📊 Analisis Lengkap Siap</p></div>
+<div><b class="text-[13px]">🏭 UMKM V4.9 FIX - REALTIME + ANALISIS + RESIKO</b><p class="text-[10px] font-mono bg-black/30 px-2 py-1 rounded mt-1" id="fbStatus">⏳ Menghubungkan Firebase...</p><p class="text-[8px] mt-1 opacity-80" id="fbDetail">Cek koneksi...</p></div>
 <div class="flex gap-2 flex-wrap">
-<button id="btnTambah" class="btn bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black">+ Tambah UMKM</button>
+<button id="btnTambah" class="btn bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black" style="pointer-events:auto">+ Tambah UMKM</button>
 <button id="btnArsip" class="btn bg-black px-3 py-2 rounded-full text-[10px]">📚 Arsip + Resiko</button>
 <button id="btnBanding" class="btn bg-yellow-400 text-black px-3 py-2 rounded-full text-[10px] font-black">⚖️ Banding (<span id="countBanding">0</span>)</button>
-<button id="btnLaporan" class="btn bg-green-600 px-3 py-2 rounded-full text-[10px]">📄 Laporan + Grafik Laba</button>
+<button id="btnLaporan" class="btn bg-green-600 px-3 py-2 rounded-full text-[10px]">📄 Laporan + Laba</button>
+<button id="btnRetry" class="btn bg-white/20 px-3 py-2 rounded-full text-[9px]">🔄 Retry</button>
 </div>
 </div>
 </div>
 
 <div class="max-w-[1800px] mx-auto p-3">
-<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
-<div class="card p-3"><b>Total UMKM</b><br><span id="totalUMKM" class="text-[18px] font-black">0</span></div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] mt-2">
+<div class="card p-3"><b>Total UMKM</b><br><span id="totalUMKM" class="text-[18px] font-black">0</span><span id="srcLabel" class="text-[8px] block">-</span></div>
 <div class="card p-3"><b>Resiko Tinggi</b><br><span id="resikoTinggi" class="text-[18px] font-black text-red-600">0</span></div>
 <div class="card p-3"><b>Laba Rata/bln</b><br><span id="labaRata" class="text-[14px] font-black">Rp 0 jt</span></div>
 <div class="card p-3"><b>Potensi Desa</b><br><span id="potensiDesa" class="text-[14px] font-black text-green-600">Rp 0 jt</span></div>
 </div>
 
-<div id="view-arsip" class="mt-3"><div class="card p-4"><div class="flex gap-2 flex-wrap"><input id="search" class="input flex-1" placeholder="Cari UMKM..."><select id="filterJenis" class="input w-[130px]"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Lainnya</option></select><select id="filterResiko" class="input w-[130px]"><option value="">Semua Resiko</option><option value="tinggi">Resiko Tinggi</option><option value="sedang">Resiko Sedang</option><option value="rendah">Resiko Rendah</option></select></div><div id="listArsip" class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3"></div></div></div>
-<div id="view-banding" class="hidden mt-3 space-y-3"><div class="card p-4"><div id="selectedBanding" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div><button id="btnBandingkanSekarang" class="btn mt-3 w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">⚖️ BANDINGKAN LABA + RESIKO</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="card p-4"><canvas id="compareChart" height="280"></canvas></div><div class="card p-4"><canvas id="compareLabaChart" height="280"></canvas></div><div class="card p-4 md:col-span-2"><div id="ranking"></div><div id="rekomBanding" class="mt-3 bg-green-50 p-3 rounded-xl text-[11px] border"></div></div></div></div>
-
-<div id="view-laporan" class="hidden mt-3">
-<div class="card p-4">
-<div class="flex justify-between flex-wrap gap-2"><b>📄 Laporan Resmi + Grafik Laba + Resiko</b><div class="flex gap-2"><button id="btnPDF" class="btn bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">PDF</button><button id="btnExcel" class="btn bg-green-600 text-white px-3 py-2 rounded-full text-[10px]">Excel</button><button id="btnJPG" class="btn bg-blue-600 text-white px-3 py-2 rounded-full text-[10px]">JPG</button></div></div>
-<div id="laporanPreview" class="mt-4 bg-white border rounded-[20px] p-6">
-<div class="text-center border-b-2 border-[#BE1E2D] pb-4"><b class="text-[16px]">LAPORAN UMKM + ANALISIS RESIKO DESA KASIH</b><br><span class="text-[10px]" id="tglLaporan"></span><div class="mt-3 grid grid-cols-4 gap-2 text-[10px]"><div class="bg-slate-50 p-2 rounded-xl border"><b id="lpTotal">0</b><br>Total UMKM</div><div class="bg-red-50 p-2 rounded-xl border"><b id="lpResiko">0</b><br>Resiko Tinggi</div><div class="bg-green-50 p-2 rounded-xl border"><b id="lpLaba">0</b><br>Total Laba/bln</div><div class="bg-blue-50 p-2 rounded-xl border"><b id="lpPotensi">0</b><br>Potensi Tambahan</div></div></div>
-<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4"><div class="border rounded-xl p-3"><p class="font-bold text-[11px]">📊 Grafik Laba vs Potensi (jt/bln)</p><canvas id="chartLaba" height="200"></canvas></div><div class="border rounded-xl p-3"><p class="font-bold text-[11px]">⚠️ Sebaran Resiko</p><canvas id="chartResiko" height="200"></canvas></div></div>
-<div class="mt-6"><p class="font-bold text-[11px]">📚 DAFTAR LENGKAP + RESIKO</p><table class="w-full mt-2 text-[8px] border" id="lpAll"><thead class="bg-slate-100"><tr><th class="border p-1">No</th><th class="border p-1 text-left">Nama</th><th class="border p-1">Skor</th><th class="border p-1">Laba</th><th class="border p-1">Potensi</th><th class="border p-1">Resiko</th><th class="border p-1">Rekomendasi</th></tr></thead><tbody></tbody></table></div>
-<div class="mt-4 bg-yellow-50 border p-3 rounded-xl text-[11px]" id="lpRekom"></div>
-</div>
-</div>
-</div>
+<div id="view-arsip" class="mt-3"><div class="card p-4"><div class="flex gap-2 flex-wrap"><input id="search" class="input flex-1" placeholder="Cari UMKM..."><select id="filterJenis" class="input w-[130px]"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Lainnya</option></select><select id="filterResiko" class="input w-[130px]"><option value="">Semua Resiko</option><option value="tinggi">Tinggi</option><option value="sedang">Sedang</option><option value="rendah">Rendah</option></select></div><div id="listArsip" class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3"></div></div></div>
+<div id="view-banding" class="hidden mt-3 space-y-3"><div class="card p-4"><div id="selectedBanding" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div><button id="btnBandingkanSekarang" class="btn mt-3 w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">⚖️ BANDINGKAN SEKARANG</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="card p-4"><canvas id="compareChart" height="250"></canvas></div><div class="card p-4"><canvas id="compareLabaChart" height="250"></canvas></div><div class="card p-4 md:col-span-2"><div id="ranking"></div><div id="rekomBanding" class="mt-3 bg-green-50 p-3 rounded-xl text-[11px] border"></div></div></div></div>
+<div id="view-laporan" class="hidden mt-3"><div class="card p-4"><div class="flex justify-between flex-wrap gap-2"><b>📄 Laporan + Grafik Laba + Resiko</b><div class="flex gap-2"><button id="btnPDF" class="btn bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">PDF</button><button id="btnExcel" class="btn bg-green-600 text-white px-3 py-2 rounded-full text-[10px]">Excel</button><button id="btnJPG" class="btn bg-blue-600 text-white px-3 py-2 rounded-full text-[10px]">JPG</button></div></div><div id="laporanPreview" class="mt-4 bg-white border rounded-[20px] p-6"><div class="text-center border-b-2 border-[#BE1E2D] pb-4"><b class="text-[16px]">LAPORAN UMKM + ANALISIS RESIKO DESA KASIH</b><br><span class="text-[10px]" id="tglLaporan"></span><div class="mt-3 grid grid-cols-4 gap-2 text-[10px]"><div class="bg-slate-50 p-2 rounded-xl border"><b id="lpTotal">0</b><br>Total</div><div class="bg-red-50 p-2 rounded-xl border"><b id="lpResiko">0</b><br>Resiko Tinggi</div><div class="bg-green-50 p-2 rounded-xl border"><b id="lpLaba">0</b><br>Total Laba</div><div class="bg-blue-50 p-2 rounded-xl border"><b id="lpPotensi">0</b><br>Potensi</div></div></div><div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"><div class="border rounded-xl p-3"><p class="font-bold text-[11px]">📊 Laba vs Potensi</p><canvas id="chartLaba" height="200"></canvas></div><div class="border rounded-xl p-3"><p class="font-bold text-[11px]">⚠️ Sebaran Resiko</p><canvas id="chartResiko" height="200"></canvas></div></div><div class="mt-4"><table class="w-full mt-2 text-[8px] border" id="lpAll"><thead class="bg-slate-100"><tr><th class="border p-1">No</th><th class="border p-1 text-left">Nama</th><th class="border p-1">Skor</th><th class="border p-1">Laba</th><th class="border p-1">Potensi</th><th class="border p-1">Resiko</th></tr></thead><tbody></tbody></table></div></div></div></div>
 </div>
 
-<div id="modalForm" class="fixed inset-0 bg-black/60 hidden z-50 flex items-start justify-center p-2 overflow-auto">
+<div id="modalForm" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-start justify-center p-2 overflow-auto">
 <div class="bg-white rounded-[24px] w-full max-w-[1100px] my-4 overflow-hidden">
 <div class="p-4 border-b flex justify-between items-center bg-[#BE1E2D] text-white"><h2 class="font-black text-[13px]" id="modalTitle">+ Tambah UMKM</h2><button id="btnBatalX" class="btn bg-white/20 w-8 h-8 rounded-full">✕</button></div>
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-0">
-<div class="lg:col-span-2 p-5 space-y-3 max-h-[85vh] overflow-auto" id="modalBody"></div>
-<div class="lg:col-span-3 bg-[#faf8f5] p-5 border-l max-h-[85vh] overflow-auto">
-<h3 class="font-black text-[12px] text-[#BE1E2D]">📊 ANALISIS LIVE + RESIKO + PREDIKSI</h3>
-<div id="liveAnalisis" class="mt-3 space-y-3"></div>
+<div class="lg:col-span-2 p-5 space-y-3 max-h-[80vh] overflow-auto" id="modalBody"></div>
+<div class="lg:col-span-3 bg-[#faf8f5] p-5 border-l max-h-[80vh] overflow-auto"><h3 class="font-black text-[12px] text-[#BE1E2D]">📊 ANALISIS LIVE + RESIKO + PREDIKSI</h3><p class="text-[9px] text-slate-500">Ketik di kiri, analisis update otomatis</p><div id="liveAnalisis" class="mt-3 space-y-3"></div></div>
 </div>
-</div>
-<div class="p-4 border-t flex gap-2 bg-white"><button id="btnBatal" class="btn flex-1 bg-slate-200 py-3 rounded-full text-[11px]">Batal</button><button id="btnSimpan" class="btn flex-1 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">💾 Simpan</button></div>
+<div class="p-4 border-t flex gap-2 bg-white"><button id="btnBatal" class="btn flex-1 bg-slate-200 py-3 rounded-full text-[11px]">Batal</button><button id="btnSimpan" class="btn flex-1 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">💾 Simpan ke Firebase</button></div>
 </div>
 </div>
 
@@ -75,51 +62,40 @@ const firebaseConfig = {
 let db, umkmRef, isFirebase=false, umkms=[], selectedIds=[], currentEditId=null, compareChart=null, compareLabaChart=null, chartLaba=null, chartResiko=null;
 
 function calcFull(d){
- let now=parseFloat(d.prod_now)||0, max=parseFloat(d.prod_max)||1, alat=parseFloat(d.alat)||1, sdm=parseFloat(d.sdm)||2, jam=parseFloat(d.jam)||8, modal=parseFloat(d.modal)||5, omzet=parseFloat(d.omzet)||0, harga=parseFloat(d.harga)||0, bahan=parseFloat(d.bahan_cost)||0, lama=parseFloat(d.lama)||2, pel=parseFloat(d.pelanggan)||10;
+ let now=parseFloat(d.prod_now)||0, max=parseFloat(d.prod_max)||1, alat=parseFloat(d.alat)||1, sdm=parseFloat(d.sdm)||2, modal=parseFloat(d.modal)||5, omzet=parseFloat(d.omzet)||0, harga=parseFloat(d.harga)||0, bahan=parseFloat(d.bahan_cost)||0, pel=parseFloat(d.pelanggan)||10, lama=parseFloat(d.lama)||2;
  let utilisasi = max>0 ? Math.min(100, Math.round(now/max*100)) : 0;
  let kapasitas_kosong = max-now;
  let omzet_per_pcs = harga>0?harga:(now>0&&omzet>0?omzet*1000000/now/26:20000);
  let potensi_tambahan = kapasitas_kosong * omzet_per_pcs * 26 /1000000;
  let biaya_bahan = bahan * now * 26 /1000000;
- let biaya_operasional = modal*0.05 + (sdm*1.5);
- let laba_kotor = omzet - biaya_bahan - biaya_operasional;
+ let biaya_ops = modal*0.05 + (sdm*1.5);
+ let laba_kotor = omzet - biaya_bahan - biaya_ops;
  let margin = harga>0? Math.round((harga-bahan)/harga*100):0;
- let sProd = Math.min(25, (now/max*15)+(alat*2)+(jam/8*3));
+ let sProd = Math.min(25, (now/max*15)+(alat*2)+3);
  let sSDM = Math.min(20, sdm*2+lama*2+5);
  let sModal = Math.min(20, (omzet>0?Math.min(12, omzet/2):0)+8);
  let sPasar = Math.min(20, Math.min(10, pel/5)+8);
  let total = Math.min(100, Math.round(sProd+sSDM+sModal+sPasar+15));
  let status = total>=80?'LAYAK UTAMA':total>=60?'CUKUP':'BELUM';
-
- // ANALISIS RESIKO
  let risks=[];
  let bahan_ratio = harga>0? bahan/harga : 1;
- if(bahan_ratio>0.7) risks.push({type:'Bahan Baku', level:'tinggi', desc:`Biaya bahan ${Math.round(bahan_ratio*100)}% dari harga jual - margin tipis ${margin}%`, mitigasi:'Cari supplier lebih murah / naikkan harga 10%'});
- else if(bahan_ratio>0.5) risks.push({type:'Bahan Baku', level:'sedang', desc:`Biaya bahan ${Math.round(bahan_ratio*100)}% - masih aman`, mitigasi:'Jaga stok 2 minggu'});
- else risks.push({type:'Bahan Baku', level:'rendah', desc:`Margin bagus ${margin}%`, mitigasi:'Pertahankan supplier'});
-
- if(pel<5) risks.push({type:'Pasar', level:'tinggi', desc:`Pelanggan tetap cuma ${pel} orang - rawan sepi`, mitigasi:'Aktifkan WA & titip di warung Kopdes'});
- else if(pel<15) risks.push({type:'Pasar', level:'sedang', desc:`Pelanggan ${pel} - cukup`, mitigasi:'Buat promo paket'});
- else risks.push({type:'Pasar', level:'rendah', desc:`Pelanggan ${pel} - loyal`, mitigasi:'Jaga kualitas'});
-
- if(utilisasi<40) risks.push({type:'Operasional', level:'tinggi', desc:`Utilisasi ${utilisasi}% - alat nganggur ${kapasitas_kosong} pcs/hari`, mitigasi:'Terima pesanan tambahan / kurangi jam'});
- else if(utilisasi<70) risks.push({type:'Operasional', level:'sedang', desc:`Utilisasi ${utilisasi}%`, mitigasi:'Optimalkan shift'});
- else risks.push({type:'Operasional', level:'rendah', desc:`Utilisasi ${utilisasi}% optimal`, mitigasi:'Siap tambah alat'});
-
- if(modal<5 && omzet>20) risks.push({type:'Keuangan', level:'tinggi', desc:`Modal ${modal}jt tapi omzet ${omzet}jt - cashflow ketat`, mitigasi:'Ajukan modal Kopdes 50%'});
- else if(laba_kotor<0) risks.push({type:'Keuangan', level:'tinggi', desc:`Rugi Rp ${laba_kotor.toFixed(1)}jt/bulan`, mitigasi:'Potong biaya / naikkan harga'});
- else if(laba_kotor<3) risks.push({type:'Keuangan', level:'sedang', desc:`Laba tipis Rp ${laba_kotor.toFixed(1)}jt`, mitigasi:'Naikkan produksi'});
- else risks.push({type:'Keuangan', level:'rendah', desc:`Laba sehat Rp ${laba_kotor.toFixed(1)}jt`, mitigasi:'Sisihkan 20% untuk modal'});
-
+ if(bahan_ratio>0.7) risks.push({type:'Bahan', level:'tinggi', desc:`Bahan ${Math.round(bahan_ratio*100)}% harga - margin ${margin}% tipis`});
+ else if(bahan_ratio>0.5) risks.push({type:'Bahan', level:'sedang', desc:`Bahan ${Math.round(bahan_ratio*100)}%`});
+ else risks.push({type:'Bahan', level:'rendah', desc:`Margin ${margin}% bagus`});
+ if(pel<5) risks.push({type:'Pasar', level:'tinggi', desc:`Pelanggan ${pel} orang`});
+ else if(pel<15) risks.push({type:'Pasar', level:'sedang', desc:`Pelanggan ${pel}`});
+ else risks.push({type:'Pasar', level:'rendah', desc:`Pelanggan ${pel} loyal`});
+ if(utilisasi<40) risks.push({type:'Operasional', level:'tinggi', desc:`Utilisasi ${utilisasi}%`});
+ else if(utilisasi<70) risks.push({type:'Operasional', level:'sedang', desc:`Utilisasi ${utilisasi}%`});
+ else risks.push({type:'Operasional', level:'rendah', desc:`Utilisasi ${utilisasi}%`});
+ if(laba_kotor<0) risks.push({type:'Keuangan', level:'tinggi', desc:`Rugi Rp ${laba_kotor.toFixed(1)}jt`});
+ else if(laba_kotor<3) risks.push({type:'Keuangan', level:'sedang', desc:`Laba tipis Rp ${laba_kotor.toFixed(1)}jt`});
+ else risks.push({type:'Keuangan', level:'rendah', desc:`Laba Rp ${laba_kotor.toFixed(1)}jt`});
  let highRisk = risks.filter(r=>r.level=='tinggi').length;
  let riskLevel = highRisk>=2?'tinggi':highRisk==1?'sedang':'rendah';
-
- // PREDIKSI
  let prediksi6Bulan = (omzet + potensi_tambahan)*6;
-
- let rekom = total>=80? `✅ LAYAK UTAMA - Laba Rp ${laba_kotor.toFixed(1)}jt, Potensi +Rp ${potensi_tambahan.toFixed(1)}jt` : total>=60? `⚠️ CUKUP - Perlu naikkan utilisasi ke 80% untuk kejar +Rp ${potensi_tambahan.toFixed(1)}jt` : `❌ BELUM - Fokus turunkan biaya bahan & tambah pelanggan`;
-
- return {total, utilisasi, kapasitas_kosong, potensi_tambahan, laba_kotor, biaya_bahan, biaya_operasional, margin, total, status, rekom, risks, riskLevel, highRisk, prediksi6Bulan, omzet, pel, bahan_ratio, nama:d.nama, jenis:d.jenis};
+ let rekom = total>=80? `✅ LAYAK UTAMA - Laba Rp ${laba_kotor.toFixed(1)}jt` : `⚠️ CUKUP - Potensi +Rp ${potensi_tambahan.toFixed(1)}jt`;
+ return {total, utilisasi, kapasitas_kosong, potensi_tambahan, laba_kotor, biaya_bahan, margin, status, rekom, risks, riskLevel, highRisk, prediksi6Bulan, omzet, nama:d.nama, jenis:d.jenis};
 }
 
 function renderLiveAnalisis(){
@@ -146,38 +122,35 @@ function renderLiveAnalisis(){
    <div class="bg-white p-2 rounded-2xl border"><b class="text-[11px]">Rp ${a.laba_kotor.toFixed(1)}jt</b><br><span class="text-[7px]">Laba/bln</span></div>
    <div class="bg-white p-2 rounded-2xl border"><b class="text-[11px] text-green-600">+Rp ${a.potensi_tambahan.toFixed(1)}jt</b><br><span class="text-[7px]">Potensi</span></div>
   </div>
-  <div class="bg-white p-3 rounded-2xl border analisis">
-   <b>📈 Bisnis</b><br>Prod: ${d.prod_now||0}/${d.prod_max||0} pcs/hari - Kosong ${a.kapasitas_kosong}<br>Harga: Rp ${(parseFloat(d.harga)||0).toLocaleString()} - Bahan: Rp ${(parseFloat(d.bahan_cost)||0).toLocaleString()} - Margin: ${a.margin}%<br>Omzet: Rp ${d.omzet||0}jt - Biaya bahan: Rp ${a.biaya_bahan.toFixed(1)}jt - Operasional: Rp ${a.biaya_operasional.toFixed(1)}jt<br><b>Laba: Rp ${a.laba_kotor.toFixed(1)}jt/bulan</b><br>Prediksi 6 bulan kalau penuh: <b>Rp ${a.prediksi6Bulan.toFixed(1)}jt</b>
-  </div>
-  <div class="bg-white p-3 rounded-2xl border analisis">
-   <b>⚠️ Analisis Resiko (4 Aspek)</b>
-   <div class="mt-2 grid grid-cols-2 gap-2">
-    ${a.risks.map(r=>`<div class="p-2 rounded-xl text-[10px] risk-${r.level}"><b>${r.type}: ${r.level.toUpperCase()}</b><br>${r.desc}<br><i>💡 ${r.mitigasi}</i></div>`).join('')}
-   </div>
-   <div class="mt-3 p-2 rounded-xl ${a.riskLevel=='tinggi'?'risk-high':a.riskLevel=='sedang'?'risk-med':'risk-low'} text-center font-bold">TOTAL RESIKO: ${a.riskLevel.toUpperCase()} - ${a.highRisk} aspek tinggi</div>
-  </div>
-  <div class="bg-${a.total>=80?'green':'yellow'}-50 border p-3 rounded-2xl analisis">${a.rekom}</div>
+  <div class="bg-white p-3 rounded-2xl border text-[11px]">📈 Bisnis: Prod ${d.prod_now||0}/${d.prod_max||0} - Harga Rp ${(parseFloat(d.harga)||0).toLocaleString()} - Bahan Rp ${(parseFloat(d.bahan_cost)||0).toLocaleString()} - Margin ${a.margin}%<br>Omzet Rp ${d.omzet||0}jt - Laba <b>Rp ${a.laba_kotor.toFixed(1)}jt</b> - Prediksi 6 bln <b>Rp ${a.prediksi6Bulan.toFixed(1)}jt</b></div>
+  <div class="bg-white p-3 rounded-2xl border text-[11px]"><b>⚠️ Analisis Resiko</b><div class="mt-2 grid grid-cols-2 gap-2">${a.risks.map(r=>`<div class="p-2 rounded-xl text-[10px] ${r.level=='tinggi'?'bg-red-100 text-red-800':r.level=='sedang'?'bg-yellow-100 text-yellow-800':'bg-green-100 text-green-800'}"><b>${r.type}: ${r.level.toUpperCase()}</b><br>${r.desc}</div>`).join('')}</div><div class="mt-2 p-2 rounded-xl text-center font-bold ${a.riskLevel=='tinggi'?'bg-red-100 text-red-800':a.riskLevel=='sedang'?'bg-yellow-100':'bg-green-100'}">TOTAL RESIKO: ${a.riskLevel.toUpperCase()}</div></div>
  `;
 }
 
 function getModalHTML(d){
  let data=d||{nama:'', jenis:'Makanan', lama:'2', prod_now:'', prod_max:'', alat:'1', sdm:'2', jam:'8', modal:'5', omzet:'', harga:'', bahan_cost:'', pelanggan:'10', alamat:''};
- return `
- <div><p class="label">Nama UMKM *</p><input id="m_nama" class="input font-bold" value="${data.nama}"></div>
+ return `<div><p class="label">Nama UMKM *</p><input id="m_nama" class="input font-bold" value="${data.nama}"></div>
  <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis</p><select id="m_jenis" class="input"><option ${data.jenis=='Makanan'?'selected':''}>Makanan</option><option ${data.jenis=='Minuman'?'selected':''}>Minuman</option><option ${data.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${data.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option><option ${data.jenis=='Jasa'?'selected':''}>Jasa</option><option ${data.jenis=='Lainnya'?'selected':''}>Lainnya</option></select></div><div><p class="label">Lama</p><select id="m_lama" class="input"><option value="2" ${data.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${data.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${data.lama=='5'?'selected':''}>>5 th</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang /hari</p><input id="m_prod_now" type="number" class="input" value="${data.prod_now}"></div><div><p class="label">Kapasitas Maks /hari</p><input id="m_prod_max" type="number" class="input" value="${data.prod_max}"></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang</p><input id="m_prod_now" type="number" class="input" value="${data.prod_now}"></div><div><p class="label">Maks</p><input id="m_prod_max" type="number" class="input" value="${data.prod_max}"></div></div>
  <div class="grid grid-cols-3 gap-2"><div><p class="label">Alat</p><input id="m_alat" type="number" class="input" value="${data.alat}"></div><div><p class="label">SDM</p><input id="m_sdm" type="number" class="input" value="${data.sdm}"></div><div><p class="label">Jam</p><input id="m_jam" type="number" class="input" value="${data.jam}"></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Harga Jual /pcs Rp</p><input id="m_harga" type="number" class="input" value="${data.harga||''}" placeholder="20000"></div><div><p class="label">Biaya Bahan /pcs Rp</p><input id="m_bahan_cost" type="number" class="input" value="${data.bahan_cost||''}" placeholder="12000"></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Harga Jual /pcs Rp</p><input id="m_harga" type="number" class="input" value="${data.harga||''}"></div><div><p class="label">Biaya Bahan /pcs Rp</p><input id="m_bahan_cost" type="number" class="input" value="${data.bahan_cost||''}"></div></div>
  <div class="grid grid-cols-2 gap-2"><div><p class="label">Omzet jt /bln</p><input id="m_omzet" type="number" class="input" value="${data.omzet}"></div><div><p class="label">Modal jt</p><input id="m_modal" type="number" class="input" value="${data.modal}"></div></div>
  <div><p class="label">Pelanggan Tetap</p><input id="m_pelanggan" type="number" class="input" value="${data.pelanggan}"></div>
- <div><p class="label">Alamat / HP</p><input id="m_alamat" class="input" value="${data.alamat||''}"></div>
- `;
+ <div><p class="label">Alamat / HP</p><input id="m_alamat" class="input" value="${data.alamat||''}"></div>`;
 }
-
 function attachLive(){ ['m_nama','m_jenis','m_lama','m_prod_now','m_prod_max','m_alat','m_sdm','m_jam','m_modal','m_omzet','m_harga','m_bahan_cost','m_pelanggan','m_alamat'].forEach(id=>{ let el=document.getElementById(id); if(el){ el.addEventListener('input', renderLiveAnalisis); el.addEventListener('change', renderLiveAnalisis); } }); renderLiveAnalisis(); }
 
-function saveLocal(){ localStorage.setItem('umkm_v48', JSON.stringify(umkms)); }
-function loadLocal(){ let data=JSON.parse(localStorage.getItem('umkm_v48')||localStorage.getItem('umkm_v47')||'[]'); umkms=data; renderAll(); }
+// CORE
+function saveLocal(){ localStorage.setItem('umkm_v49', JSON.stringify(umkms)); localStorage.setItem('umkm_v48', JSON.stringify(umkms)); localStorage.setItem('umkm_v47', JSON.stringify(umkms)); }
+function loadLocal(){ 
+ let data=null;
+ for(let k of ['umkm_v49','umkm_v48','umkm_v47','umkm_v46','umkm_backup','umkm_v43']){
+  try{ let d=JSON.parse(localStorage.getItem(k)||'null'); if(d && d.length>0){ data=d; break; } }catch(e){}
+ }
+ if(data){ umkms=data; }
+ renderAll(); 
+}
+
 function renderAll(){ renderStats(); renderArsip(); renderLaporan(); }
 function renderStats(){
  document.getElementById('totalUMKM').innerText=umkms.length;
@@ -194,5 +167,14 @@ function renderArsip(){
  document.getElementById('listArsip').innerHTML=filtered.map(u=>{
   let s=calcFull(u); let checked=selectedIds.includes(u.id);
   return `<div class="card p-4 border ${checked?'ring-2 ring-[#BE1E2D]':''}">
-   <div class="flex justify-between"><div><b class="text-[13px]">${u.nama}</b> <span class="text-[8px] px-2 py-1 rounded-full ${s.riskLevel=='tinggi'?'risk-high':s.riskLevel=='sedang'?'risk-med':'risk-low'}">${s.riskLevel.toUpperCase()} RISK</span><br><span class="text-[9px] bg-slate-100 px-2 py-1 rounded-full">${u.jenis}</span> <span class="text-[9px] ${s.total>=80?'bg-green-100 text-green-700':s.total>=60?'bg-yellow-100':'bg-red-100'} px-2 py-1 rounded-full font-bold">${s.total}/100 - ${s.status}</span></div><input type="checkbox" data-check="${u.id}" ${checked?'checked':''} class="check-umkm w-5 h-5"></div>
-   <div class="mt-3 grid grid-cols-2 gap-2 text-[10px] bg-slate-50 p-2 rounded-xl"><div>💰 Laba: Rp ${s.laba_kotor.toFixed(1)}jt/bln - Margin ${s.margin}%</div
+   <div class="flex justify-between"><div><b class="text-[13px]">${u.nama}</b> <span class="text-[8px] px-2 py-1 rounded-full ${s.riskLevel=='tinggi'?'bg-red-100 text-red-700':s.riskLevel=='sedang'?'bg-yellow-100':'bg-green-100'}">${s.riskLevel.toUpperCase()} RISK</span><br><span class="text-[9px] bg-slate-100 px-2 py-1 rounded-full">${u.jenis}</span> <span class="text-[9px] ${s.total>=80?'bg-green-100 text-green-700':s.total>=60?'bg-yellow-100':'bg-red-100'} px-2 py-1 rounded-full font-bold">${s.total}/100</span></div><input type="checkbox" data-check="${u.id}" ${checked?'checked':''} class="check-umkm w-5 h-5"></div>
+   <div class="mt-2 text-[10px] bg-slate-50 p-2 rounded-xl">💰 Laba Rp ${s.laba_kotor.toFixed(1)}jt - Margin ${s.margin}% - Potensi +Rp ${s.potensi_tambahan.toFixed(1)}jt - Util ${s.utilisasi}%</div>
+   <div class="flex gap-2 mt-3"><button data-edit="${u.id}" class="btn-edit flex-1 bg-slate-900 text-white py-2 rounded-full text-[10px]">✏️ Edit</button><button data-del="${u.id}" class="btn-del bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">🗑️ Hapus</button></div>
+  </div>`;
+ }).join('') || '<div class="col-span-2 text-center p-10 text-slate-400">Belum ada data. Klik + Tambah UMKM - Data lama otomatis kebaca.</div>';
+ document.getElementById('countBanding').innerText=selectedIds.length;
+ document.querySelectorAll('.check-umkm').forEach(el=> el.addEventListener('change', e=> toggleSelect(e.target.getAttribute('data-check'))));
+ document.querySelectorAll('.btn-edit').forEach(el=> el.addEventListener('click', e=> openEdit(e.target.getAttribute('data-edit'))));
+ document.querySelectorAll('.btn-del').forEach(el=> el.addEventListener('click', e=> deleteUMKM(e.target.getAttribute('data-del'))));
+}
+function toggleSelect(id){ if(selectedIds.includes(id)) selectedIds=selectedIds.filter(x=>x!=id); else { if(selectedIds.length>=3){ alert('Maks 3'); return; } selectedIds.push(id); } renderArsip(); render
