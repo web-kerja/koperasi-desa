@@ -2,69 +2,54 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UMKM V4.4 FINAL - KERTANEGARA</title>
+<title>UMKM V4.5 STABLE FINAL</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>.input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; font-size:11px; width:100%; background:white} .label{font-size:8px; font-weight:800; color:#BE1E2D; text-transform:uppercase} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .btn{cursor:pointer}</style>
+<style>.input{border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; font-size:11px; width:100%; background:white} .card{border-radius:20px; background:white; box-shadow:0 4px 20px rgba(0,0,0,.05)} .btn{cursor:pointer}</style>
 </head>
 <body class="bg-[#f6f5f2] pb-28">
 <div class="bg-[#BE1E2D] text-white p-3 sticky top-0 z-40">
 <div class="max-w-[1800px] mx-auto flex justify-between flex-wrap gap-2">
-<div><b class="text-[13px]">🏭 UMKM V4.4 FINAL - KERTANEGARA</b><p class="text-[9px] opacity-90" id="fbStatus">⏳ Menghubungkan...</p></div>
+<div><b class="text-[13px]">🏭 UMKM V4.5 STABLE FINAL</b><p class="text-[9px] bg-black/30 px-2 py-1 rounded font-mono mt-1" id="fbStatus">⏳ Menghubungkan...</p></div>
 <div class="flex gap-2 flex-wrap">
-<button id="btnTambah" class="btn bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black">+ Tambah UMKM</button>
-<button id="btnArsip" class="btn bg-black px-4 py-2 rounded-full text-[10px]">📚 Arsip</button>
-<button id="btnBanding" class="btn bg-yellow-400 text-black px-4 py-2 rounded-full text-[10px] font-black">⚖️ Banding (<span id="countBanding">0</span>)</button>
-<button id="btnLaporan" class="btn bg-green-600 px-4 py-2 rounded-full text-[10px]">📄 Laporan Cantik</button>
+<button id="btnTambah" class="btn bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[11px] font-black">+ Tambah</button>
+<button id="btnArsip" class="btn bg-black px-3 py-2 rounded-full text-[10px]">📚 Arsip</button>
+<button id="btnBanding" class="btn bg-yellow-400 text-black px-3 py-2 rounded-full text-[10px] font-black">⚖️ Banding (<span id="countBanding">0</span>)</button>
+<button id="btnLaporan" class="btn bg-green-600 px-3 py-2 rounded-full text-[10px]">📄 Laporan</button>
+<button id="btnReset" class="btn bg-red-800 border border-white/30 px-3 py-2 rounded-full text-[9px]">🗑️ Hapus Semua</button>
 </div>
 </div>
 </div>
 
 <div class="max-w-[1800px] mx-auto p-3">
-<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
-<div class="card p-3"><b>Total UMKM</b><br><span id="totalUMKM" class="text-[18px] font-black">0</span><span class="text-[8px] text-slate-400 block" id="srcLabel">-</span></div>
-<div class="card p-3"><b>Layak Utama (80+)</b><br><span id="layakUtama" class="text-[18px] font-black text-green-600">0</span></div>
+<div class="card p-3 text-[11px] bg-blue-50 border hidden" id="diagBox">
+<b>Diagnosa:</b> <span id="diagText">-</span><br><button id="btnRetry" class="btn mt-2 bg-[#BE1E2D] text-white px-3 py-1 rounded-full text-[10px]">🔄 Retry Koneksi</button> <button id="btnLocal" class="btn mt-2 bg-slate-800 text-white px-3 py-1 rounded-full text-[10px]">📱 Pakai Lokal</button>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] mt-3">
+<div class="card p-3"><b>Total UMKM</b><br><span id="totalUMKM" class="text-[18px] font-black">0</span><span class="text-[8px] block" id="srcLabel">-</span></div>
+<div class="card p-3"><b>Layak Utama</b><br><span id="layakUtama" class="text-[18px] font-black text-green-600">0</span></div>
 <div class="card p-3"><b>Per Jenis</b><br><span id="perJenis" class="text-[9px]">-</span></div>
 <div class="card p-3"><b>Rata Skor</b><br><span id="rataSkor" class="text-[18px] font-black">0</span></div>
 </div>
 
-<div id="view-arsip" class="mt-3"><div class="card p-4"><div class="flex gap-2 flex-wrap"><input id="search" class="input flex-1" placeholder="Cari nama UMKM, contoh: Bu Siti keripik..."><select id="filterJenis" class="input w-[150px]"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Lainnya</option></select></div><div id="listArsip" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div></div></div>
+<div id="view-arsip" class="mt-3"><div class="card p-4"><div class="flex gap-2 flex-wrap"><input id="search" class="input flex-1" placeholder="Cari nama UMKM..."><select id="filterJenis" class="input w-[150px]"><option value="">Semua Jenis</option><option>Makanan</option><option>Minuman</option><option>Kerajinan</option><option>Pertanian Olahan</option><option>Jasa</option><option>Lainnya</option></select></div><div id="listArsip" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div></div></div>
 
-<div id="view-banding" class="hidden mt-3 space-y-3">
-<div class="card p-4"><h3 class="font-black text-[12px]">UMKM Terpilih untuk Dibandingkan</h3><p class="text-[10px] text-slate-500">Centang maksimal 3 UMKM sejenis di tab Arsip, lalu bandingkan.</p><div id="selectedBanding" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3"></div><button id="btnBandingkanSekarang" class="btn mt-3 w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">⚖️ BANDINGKAN SEKARANG</button></div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="card p-4"><h3 class="font-bold text-[11px]">📊 Grafik Perbandingan</h3><canvas id="compareChart" height="260"></canvas></div><div class="card p-4"><h3 class="font-bold text-[11px]">🏆 Ranking & Rekomendasi</h3><div id="ranking" class="mt-3 space-y-2"></div><div id="rekomBanding" class="mt-3 bg-green-50 border border-green-200 p-3 rounded-xl text-[11px]"></div></div></div>
-</div>
+<div id="view-banding" class="hidden mt-3 space-y-3"><div class="card p-4"><div id="selectedBanding" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div><button id="btnBandingkanSekarang" class="btn mt-3 w-full bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[11px]">⚖️ BANDINGKAN SEKARANG</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><div class="card p-4"><canvas id="compareChart" height="250"></canvas></div><div class="card p-4"><div id="ranking"></div><div id="rekomBanding" class="mt-2 bg-green-50 p-3 rounded-xl text-[11px] border"></div></div></div></div>
 
 <div id="view-laporan" class="hidden mt-3">
 <div class="card p-4">
-<div class="flex justify-between flex-wrap gap-2 items-center"><h2 class="font-black text-[14px]">📄 Preview Laporan Resmi - Siap Cetak</h2><div class="flex gap-2"><button id="btnPDF" class="btn bg-red-600 text-white px-4 py-2 rounded-full text-[11px] font-bold">📕 PDF</button><button id="btnExcel" class="btn bg-green-600 text-white px-4 py-2 rounded-full text-[11px] font-bold">📗 Excel</button><button id="btnJPG" class="btn bg-blue-600 text-white px-4 py-2 rounded-full text-[11px] font-bold">🖼️ JPG</button></div></div>
-
+<div class="flex justify-between flex-wrap gap-2"><b>📄 Laporan Cantik Resmi</b><div class="flex gap-2"><button id="btnPDF" class="btn bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">PDF</button><button id="btnExcel" class="btn bg-green-600 text-white px-3 py-2 rounded-full text-[10px]">Excel</button><button id="btnJPG" class="btn bg-blue-600 text-white px-3 py-2 rounded-full text-[10px]">JPG</button></div></div>
 <div id="laporanPreview" class="mt-4 bg-white border rounded-[20px] p-6">
-<div class="text-center border-b-2 border-[#BE1E2D] pb-4">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Coat_of_arms_of_Purbalingga_Regency.svg/1200px-Coat_of_arms_of_Purbalingga_Regency.svg.png" class="w-12 h-12 mx-auto mb-2 hidden">
-<b class="text-[16px] tracking-wide">LAPORAN DATA UMKM DESA KASIH</b><br>
-<b class="text-[12px]">KECAMATAN KERTANEGARA - KAB. PURBALINGGA</b><br>
-<span class="text-[11px] text-slate-500">KDKMP Kasih - Sistem Pendataan UMKM Realtime Firebase</span><br>
-<span class="text-[10px] text-slate-400" id="tglLaporan"></span>
-<div class="mt-4 grid grid-cols-3 gap-3 text-[11px]">
-<div class="bg-slate-50 p-3 rounded-2xl border"><b class="text-[18px]" id="lpTotal">0</b><br>Total UMKM Terdata</div>
-<div class="bg-green-50 p-3 rounded-2xl border border-green-200"><b class="text-[18px] text-green-700" id="lpUtama">0</b><br>Layak Mitra Utama (80+)</div>
-<div class="bg-blue-50 p-3 rounded-2xl border border-blue-200"><b class="text-[18px] text-blue-700" id="lpRata">0</b><br>Rata-rata Skor Desa</div>
-</div>
-</div>
-
-<div class="mt-6"><p class="font-black text-[12px]">📊 1. REKAP PER JENIS USAHA</p><table class="w-full mt-2 text-[11px] border" id="lpJenis"><thead class="bg-[#BE1E2D] text-white"><tr><th class="border p-2 text-left">Jenis Usaha</th><th class="border p-2">Jumlah</th><th class="border p-2">Rata Skor</th><th class="border p-2 text-left">UMKM Terbaik</th></tr></thead><tbody></tbody></table></div>
-
-<div class="mt-6"><p class="font-black text-[12px]">🏆 2. TOP 10 UMKM TERKUAT DESA KASIH</p><table class="w-full mt-2 text-[10px] border" id="lpTop10"><thead class="bg-green-600 text-white"><tr><th class="border p-2">Rank</th><th class="border p-2 text-left">Nama UMKM</th><th class="border p-2">Jenis</th><th class="border p-2">Skor</th><th class="border p-2">Status</th><th class="border p-2">Omzet</th></tr></thead><tbody></tbody></table></div>
-
-<div class="mt-6"><p class="font-black text-[12px]">📚 3. DAFTAR LENGKAP SEMUA UMKM</p><table class="w-full mt-2 text-[9px] border" id="lpAll"><thead class="bg-slate-100"><tr><th class="border p-1">No</th><th class="border p-1 text-left">Nama UMKM</th><th class="border p-1">Jenis</th><th class="border p-1">Skor</th><th class="border p-1">Status</th><th class="border p-1 text-left">Alamat / Kontak</th></tr></thead><tbody></tbody></table></div>
-
-<div class="mt-6 bg-yellow-50 border-2 border-yellow-200 p-4 rounded-2xl text-[11px] leading-relaxed" id="lpRekom"></div>
-<div class="mt-6 text-[9px] text-slate-400 text-center border-t pt-3">Dokumen ini digenerate otomatis oleh Sistem UMKM V4.4 Kertanegara - Firebase Realtime kasih-kopdes - Untuk Rapat Pengurus KDKMP Kasih</div>
+<div class="text-center border-b-2 border-[#BE1E2D] pb-4"><b class="text-[16px]">LAPORAN DATA UMKM DESA KASIH</b><br><span class="text-[11px] text-slate-500">KERTANEGARA - PURBALINGGA - Firebase Realtime</span><br><span class="text-[10px]" id="tglLaporan"></span>
+<div class="mt-3 grid grid-cols-3 gap-2 text-[10px]"><div class="bg-slate-50 p-2 rounded-xl border"><b id="lpTotal">0</b><br>Total</div><div class="bg-green-50 p-2 rounded-xl border"><b id="lpUtama">0</b><br>Utama</div><div class="bg-blue-50 p-2 rounded-xl border"><b id="lpRata">0</b><br>Rata</div></div></div>
+<div class="mt-4"><p class="font-bold text-[11px]">📊 PER JENIS</p><table class="w-full mt-2 text-[10px] border" id="lpJenis"><thead class="bg-[#BE1E2D] text-white"><tr><th class="border p-2 text-left">Jenis</th><th class="border p-2">Jml</th><th class="border p-2">Rata</th><th class="border p-2">Terbaik</th></tr></thead><tbody></tbody></table></div>
+<div class="mt-4"><p class="font-bold text-[11px]">📚 SEMUA UMKM</p><table class="w-full mt-2 text-[9px] border" id="lpAll"><thead class="bg-slate-100"><tr><th class="border p-1">No</th><th class="border p-1 text-left">Nama</th><th class="border p-1">Jenis</th><th class="border p-1">Skor</th><th class="border p-1">Status</th><th class="border p-1">Alamat</th></tr></thead><tbody></tbody></table></div>
+<div class="mt-4 bg-yellow-50 border p-3 rounded-xl text-[11px]" id="lpRekom"></div>
 </div>
 </div>
 </div>
@@ -87,31 +72,70 @@ const firebaseConfig = {
   messagingSenderId: "746954171317",
   appId: "1:746954171317:web:c603cc408212a50ece2ffc",
 };
-firebase.initializeApp(firebaseConfig);
-let db=firebase.database();
-let umkmRef=db.ref('umkm_kertanegara_v4/list');
-
-let umkms=[], selectedIds=[], currentEditId=null, compareChart=null;
+let app, db, umkmRef;
+let umkms=[], selectedIds=[], currentEditId=null, compareChart=null, isFirebase=false;
 
 function calcScore(d){
  let now=parseFloat(d.prod_now)||0, max=parseFloat(d.prod_max)||1, alat=parseFloat(d.alat)||0, omzet=parseFloat(d.omzet)||0, lama=parseFloat(d.lama)||2;
  let utilisasi=Math.min(100, Math.round(now/max*100));
  let sProd=Math.min(20, (now/max*10)+(alat*2)+5);
- let sSDM=10, sModal=Math.min(20, (omzet?5:0)+10), sPasar=12, sLegal=10;
- let total=Math.min(100, Math.round(sProd+sSDM+sModal+sPasar+sLegal+lama*2+utilisasi/10));
+ let total=Math.min(100, Math.round(sProd+10+ (omzet?10:0)+24+lama*2+utilisasi/10));
  let status=total>=80?'LAYAK UTAMA':total>=60?'CUKUP':'BELUM';
- return {total, utilisasi, sProd, sSDM, sModal, sPasar, sLegal, status, nama:d.nama, jenis:d.jenis};
+ return {total, utilisasi, sProd, sSDM:10, sModal:10, sPasar:12, sLegal:10, status, nama:d.nama, jenis:d.jenis};
 }
 
-umkmRef.on('value', snap=>{
- let data=snap.val(); umkms=[]; if(data) Object.keys(data).forEach(k=> umkms.push({id:k, ...data[k]}));
- document.getElementById('fbStatus').innerText='✅ Connected Firebase - '+umkms.length+' UMKM - Realtime aktif';
- document.getElementById('srcLabel').innerText='FIREBASE CLOUD - '+umkms.length+' data';
+function initFirebase(){
+ try{
+  if(!firebase.apps.length) app=firebase.initializeApp(firebaseConfig);
+  db=firebase.database();
+  umkmRef=db.ref('umkm_kertanegara_v4/list');
+  document.getElementById('fbStatus').innerText='⏳ Menghubungkan ke Firebase...';
+  document.getElementById('diagBox').classList.add('hidden');
+
+  let timeout=setTimeout(()=>{
+   if(!isFirebase){
+    document.getElementById('fbStatus').innerText='⚠️ Firebase timeout - pakai lokal dulu';
+    document.getElementById('diagBox').classList.remove('hidden');
+    document.getElementById('diagText').innerText='Firebase tidak respon dalam 5 detik. Kemungkinan Rules atau jaringan. Klik Retry atau pakai Lokal.';
+    loadLocal();
+   }
+  },5000);
+
+  umkmRef.on('value', snap=>{
+   clearTimeout(timeout);
+   isFirebase=true;
+   let data=snap.val(); umkms=[]; if(data) Object.keys(data).forEach(k=> umkms.push({id:k, ...data[k], _fb:true}));
+   document.getElementById('fbStatus').innerText='✅ Connected Firebase - '+umkms.length+' UMKM - Realtime';
+   document.getElementById('srcLabel').innerText='FIREBASE CLOUD';
+   document.getElementById('srcLabel').className='text-[8px] block text-green-600';
+   document.getElementById('diagBox').classList.add('hidden');
+   localStorage.setItem('umkm_backup', JSON.stringify(umkms));
+   renderAll();
+  }, err=>{
+   clearTimeout(timeout);
+   document.getElementById('fbStatus').innerText='❌ Error: '+err.message;
+   document.getElementById('diagBox').classList.remove('hidden');
+   document.getElementById('diagText').innerText=err.message+' - Pastikan Rules .read true .write true';
+   loadLocal();
+  });
+
+ }catch(e){
+  document.getElementById('fbStatus').innerText='❌ Init error: '+e.message;
+  document.getElementById('diagBox').classList.remove('hidden');
+  document.getElementById('diagText').innerText=e.message;
+  loadLocal();
+ }
+}
+
+function loadLocal(){
+ let data=JSON.parse(localStorage.getItem('umkm_backup')||localStorage.getItem('umkm_v43')||'[]');
+ umkms=data.map(d=> ({...d, _fb:false}));
+ document.getElementById('srcLabel').innerText='MODE LOKAL ('+umkms.length+')';
+ document.getElementById('srcLabel').className='text-[8px] block text-yellow-600';
  renderAll();
-});
+}
 
 function renderAll(){ renderStats(); renderArsip(); renderLaporan(); }
-
 function renderStats(){
  document.getElementById('totalUMKM').innerText=umkms.length;
  let scores=umkms.map(calcScore);
@@ -120,43 +144,37 @@ function renderStats(){
  let perJenis={}; scores.forEach(s=>{ perJenis[s.jenis]=(perJenis[s.jenis]||0)+1; });
  document.getElementById('perJenis').innerText=Object.keys(perJenis).map(k=>`${k}:${perJenis[k]}`).join(', ')||'-';
 }
-
 function renderArsip(){
  let q=(document.getElementById('search').value||'').toLowerCase();
  let fj=document.getElementById('filterJenis').value;
- let filtered=umkms.filter(u=>{
-  if(q && !u.nama.toLowerCase().includes(q)) return false;
-  if(fj && u.jenis!=fj) return false;
-  return true;
- });
+ let filtered=umkms.filter(u=>{ if(q && !u.nama.toLowerCase().includes(q)) return false; if(fj && u.jenis!=fj) return false; return true; });
  document.getElementById('listArsip').innerHTML=filtered.map(u=>{
   let s=calcScore(u); let checked=selectedIds.includes(u.id);
   return `<div class="card p-4 border ${checked?'ring-2 ring-[#BE1E2D]':''}">
-   <div class="flex justify-between"><div><b class="text-[13px]">${u.nama}</b><br><span class="text-[9px] bg-slate-100 px-2 py-1 rounded-full">${u.jenis}</span> <span class="text-[9px] ${s.total>=80?'bg-green-100 text-green-700':s.total>=60?'bg-yellow-100':'bg-red-100'} px-2 py-1 rounded-full font-bold">${s.total}/100 - ${s.status}</span></div><input type="checkbox" data-check="${u.id}" ${checked?'checked':''} class="check-umkm w-5 h-5"></div>
-   <div class="grid grid-cols-2 gap-2 mt-3 text-[10px] text-slate-500"><div>Prod: ${u.prod_now||0}/${u.prod_max||0}</div><div>Omzet: ${u.omzet||0} jt</div></div>
-   <div class="text-[9px] mt-1 text-slate-400">${u.alamat||''}</div>
-   <div class="flex gap-2 mt-3"><button data-edit="${u.id}" class="btn-edit flex-1 bg-slate-900 text-white py-2 rounded-full text-[10px]">✏️ Edit</button><button data-del="${u.id}" class="btn-del bg-red-50 text-red-600 px-3 py-2 rounded-full text-[10px]">🗑️ Hapus</button></div>
+   <div class="flex justify-between"><div><b class="text-[13px]">${u.nama}</b> ${u._fb?'<span class="text-[8px] bg-blue-100 px-1 rounded">☁️ Firebase</span>':'<span class="text-[8px] bg-yellow-100 px-1 rounded">📱 Lokal</span>'}<br><span class="text-[9px] bg-slate-100 px-2 py-1 rounded-full">${u.jenis}</span> <span class="text-[9px] ${s.total>=80?'bg-green-100 text-green-700':s.total>=60?'bg-yellow-100':'bg-red-100'} px-2 py-1 rounded-full font-bold">${s.total}/100 - ${s.status}</span></div><input type="checkbox" data-check="${u.id}" ${checked?'checked':''} class="check-umkm w-5 h-5"></div>
+   <div class="text-[10px] mt-2 text-slate-500">Prod: ${u.prod_now||0}/${u.prod_max||0} | Omzet: ${u.omzet||0}jt | ${u.alamat||''}</div>
+   <div class="flex gap-2 mt-3"><button data-edit="${u.id}" class="btn-edit flex-1 bg-slate-900 text-white py-2 rounded-full text-[10px]">✏️ Edit</button><button data-del="${u.id}" class="btn-del bg-red-600 text-white px-3 py-2 rounded-full text-[10px]">🗑️ Hapus</button></div>
   </div>`;
- }).join('') || '<div class="col-span-3 text-center p-10 text-slate-400 text-[12px]">Belum ada UMKM.<br>Klik <b>+ Tambah UMKM</b> untuk mulai isi data pertama.</div>';
+ }).join('') || '<div class="col-span-3 text-center p-10 text-slate-400">Belum ada UMKM. Klik + Tambah.</div>';
  document.getElementById('countBanding').innerText=selectedIds.length;
  document.querySelectorAll('.check-umkm').forEach(el=> el.addEventListener('change', e=> toggleSelect(e.target.getAttribute('data-check'))));
  document.querySelectorAll('.btn-edit').forEach(el=> el.addEventListener('click', e=> openEdit(e.target.getAttribute('data-edit'))));
  document.querySelectorAll('.btn-del').forEach(el=> el.addEventListener('click', e=> deleteUMKM(e.target.getAttribute('data-del'))));
 }
-function toggleSelect(id){ if(selectedIds.includes(id)) selectedIds=selectedIds.filter(x=>x!=id); else { if(selectedIds.length>=3){ alert('Maksimal 3 UMKM biar perbandingan jelas'); return; } selectedIds.push(id); } renderArsip(); renderSelected(); }
+function toggleSelect(id){ if(selectedIds.includes(id)) selectedIds=selectedIds.filter(x=>x!=id); else { if(selectedIds.length>=3){ alert('Maks 3'); return; } selectedIds.push(id); } renderArsip(); renderSelected(); }
 function renderSelected(){
  document.getElementById('selectedBanding').innerHTML=selectedIds.map(id=>{
   let u=umkms.find(x=>x.id==id); if(!u) return ''; let s=calcScore(u);
-  return `<div class="card p-3 border"><b class="text-[11px]">${u.nama}</b><p class="text-[10px]">${u.jenis} - ${s.total}/100 - ${s.status}</p></div>`;
- }).join('')||'<p class="text-[11px] text-slate-400">Centang UMKM di tab Arsip dulu (maks 3)</p>';
+  return `<div class="card p-3 border"><b class="text-[11px]">${u.nama}</b><p class="text-[10px]">${u.jenis} - ${s.total}/100</p></div>`;
+ }).join('')||'<p class="text-[11px] text-slate-400">Centang di Arsip dulu</p>';
 }
 function getModalHTML(d){
  let data=d||{nama:'', jenis:'Makanan', lama:'2', prod_now:'', prod_max:'', alat:'', omzet:'', alamat:''};
- return `<div><p class="label">Nama UMKM *</p><input id="m_nama" class="input font-bold" value="${data.nama}" placeholder="Contoh: Bu Siti - Keripik Singkong"></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis Usaha</p><select id="m_jenis" class="input"><option ${data.jenis=='Makanan'?'selected':''}>Makanan</option><option ${data.jenis=='Minuman'?'selected':''}>Minuman</option><option ${data.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${data.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option><option ${data.jenis=='Jasa'?'selected':''}>Jasa</option><option ${data.jenis=='Lainnya'?'selected':''}>Lainnya</option></select></div><div><p class="label">Lama Usaha</p><select id="m_lama" class="input"><option value="1" ${data.lama=='1'?'selected':''}><1 th</option><option value="2" ${data.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${data.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${data.lama=='5'?'selected':''}>>5 th</option></select></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Produksi Sekarang / Hari</p><input id="m_prod_now" type="number" class="input" value="${data.prod_now}" placeholder="50"></div><div><p class="label">Kapasitas Maks / Hari</p><input id="m_prod_max" type="number" class="input" value="${data.prod_max}" placeholder="100"></div></div>
- <div class="grid grid-cols-2 gap-2"><div><p class="label">Jumlah Alat</p><input id="m_alat" type="number" class="input" value="${data.alat}" placeholder="2"></div><div><p class="label">Omzet jt / Bulan</p><input id="m_omzet" type="number" class="input" value="${data.omzet}" placeholder="15"></div></div>
- <div><p class="label">Alamat / Dusun / No HP (untuk laporan resmi)</p><input id="m_alamat" class="input" value="${data.alamat||''}" placeholder="Dusun 2 Kasih RT 03 - 0812xxxx"></div>`;
+ return `<div><p class="label">Nama UMKM *</p><input id="m_nama" class="input font-bold" value="${data.nama}"></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Jenis</p><select id="m_jenis" class="input"><option ${data.jenis=='Makanan'?'selected':''}>Makanan</option><option ${data.jenis=='Minuman'?'selected':''}>Minuman</option><option ${data.jenis=='Kerajinan'?'selected':''}>Kerajinan</option><option ${data.jenis=='Pertanian Olahan'?'selected':''}>Pertanian Olahan</option><option ${data.jenis=='Jasa'?'selected':''}>Jasa</option><option ${data.jenis=='Lainnya'?'selected':''}>Lainnya</option></select></div><div><p class="label">Lama Usaha</p><select id="m_lama" class="input"><option value="2" ${data.lama=='2'?'selected':''}>1-3 th</option><option value="4" ${data.lama=='4'?'selected':''}>3-5 th</option><option value="5" ${data.lama=='5'?'selected':''}>>5 th</option></select></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Prod Sekarang</p><input id="m_prod_now" type="number" class="input" value="${data.prod_now}"></div><div><p class="label">Maks</p><input id="m_prod_max" type="number" class="input" value="${data.prod_max}"></div></div>
+ <div class="grid grid-cols-2 gap-2"><div><p class="label">Alat</p><input id="m_alat" type="number" class="input" value="${data.alat}"></div><div><p class="label">Omzet jt</p><input id="m_omzet" type="number" class="input" value="${data.omzet}"></div></div>
+ <div><p class="label">Alamat / HP (bisa dihapus/edit nanti)</p><input id="m_alamat" class="input" value="${data.alamat||''}"></div>`;
 }
 
 document.getElementById('btnTambah').addEventListener('click', ()=>{ currentEditId=null; document.getElementById('modalTitle').innerText='+ Tambah UMKM Baru'; document.getElementById('modalBody').innerHTML=getModalHTML(); document.getElementById('modalForm').classList.remove('hidden'); });
@@ -164,29 +182,37 @@ document.getElementById('btnArsip').addEventListener('click', ()=> setTab('arsip
 document.getElementById('btnBanding').addEventListener('click', ()=> setTab('banding'));
 document.getElementById('btnLaporan').addEventListener('click', ()=> setTab('laporan'));
 document.getElementById('btnBatal').addEventListener('click', ()=> document.getElementById('modalForm').classList.add('hidden'));
+document.getElementById('btnRetry').addEventListener('click', ()=> initFirebase());
+document.getElementById('btnLocal').addEventListener('click', ()=> { isFirebase=false; document.getElementById('diagBox').classList.add('hidden'); loadLocal(); document.getElementById('fbStatus').innerText='📱 Mode Lokal - Data di HP saja'; });
+document.getElementById('btnReset').addEventListener('click', ()=>{
+ if(!confirm('HAPUS SEMUA UMKM PERMANEN?\\nKalau di Firebase, semua HP pengurus juga kehapus!')) return;
+ if(!confirm('Yakin? Tidak bisa dikembalikan!')) return;
+ if(isFirebase && umkmRef){ umkmRef.remove().then(()=> alert('Semua data Firebase terhapus')); }else{ localStorage.removeItem('umkm_backup'); localStorage.removeItem('umkm_v43'); umkms=[]; renderAll(); alert('Data lokal terhapus'); }
+});
 document.getElementById('btnSimpan').addEventListener('click', ()=>{
  let data={nama:document.getElementById('m_nama').value, jenis:document.getElementById('m_jenis').value, lama:document.getElementById('m_lama').value, prod_now:document.getElementById('m_prod_now').value, prod_max:document.getElementById('m_prod_max').value, alat:document.getElementById('m_alat').value, omzet:document.getElementById('m_omzet').value, alamat:document.getElementById('m_alamat').value, updated:Date.now()};
- if(!data.nama) return alert('Nama UMKM wajib diisi');
- if(currentEditId) umkmRef.child(currentEditId).update(data); else umkmRef.push({...data, created:Date.now()});
+ if(!data.nama) return alert('Nama wajib');
+ if(isFirebase && data._fb!==false){ // firebase mode
+  if(currentEditId && !currentEditId.startsWith('local_')) umkmRef.child(currentEditId).update(data); else umkmRef.push({...data, created:Date.now()});
+ }else{
+  if(currentEditId){ let idx=umkms.findIndex(x=>x.id==currentEditId); if(idx>=0) umkms[idx]={...umkms[idx], ...data}; else umkms.push({id:'local_'+Date.now(), ...data}); }else{ umkms.push({id:'local_'+Date.now(), ...data}); }
+  localStorage.setItem('umkm_backup', JSON.stringify(umkms));
+  renderAll();
+ }
  document.getElementById('modalForm').classList.add('hidden');
 });
 document.getElementById('search').addEventListener('input', renderArsip);
 document.getElementById('filterJenis').addEventListener('change', renderArsip);
 document.getElementById('btnBandingkanSekarang').addEventListener('click', ()=>{
- if(selectedIds.length<2) return alert('Centang minimal 2 UMKM di Arsip dulu');
+ if(selectedIds.length<2) return alert('Pilih minimal 2 di Arsip');
  let data=selectedIds.map(id=> umkms.find(x=>x.id==id)).map(calcScore); data.sort((a,b)=>b.total-a.total);
- document.getElementById('ranking').innerHTML=data.map((d,i)=>`<div class="flex justify-between border p-3 rounded-2xl ${i==0?'bg-green-50 border-green-300':''}"><div><b class="text-[12px]">${i==0?'🏆':i==1?'🥈':'🥉'} #${i+1} ${d.nama}</b><p class="text-[10px]">${d.jenis} - ${d.total}/100 - ${d.status}</p></div><b class="text-[16px]">${d.total}</b></div>`).join('');
+ document.getElementById('ranking').innerHTML=data.map((d,i)=>`<div class="flex justify-between border p-3 rounded-2xl ${i==0?'bg-green-50 border-green-300':''}"><div><b class="text-[12px]">${i==0?'🏆':i==1?'🥈':'🥉'} #${i+1} ${d.nama}</b><p class="text-[10px]">${d.jenis} - ${d.total}/100</p></div><b class="text-[16px]">${d.total}</b></div>`).join('');
  if(compareChart) compareChart.destroy();
- compareChart=new Chart(document.getElementById('compareChart'), {type:'bar', data:{labels:['Produksi','SDM','Modal','Pasar','Legal','TOTAL'], datasets:data.map((d,idx)=>({label:d.nama, data:[d.sProd, d.sSDM, d.sModal, d.sPasar, d.sLegal, d.total], backgroundColor:['#2563eb','#16a34a','#ea580c'][idx]}))}, options:{responsive:true, scales:{y:{min:0,max:100}}}});
- document.getElementById('rekomBanding').innerHTML=`<b>💡 Keputusan Pengurus:</b><br><b>${data[0].nama}</b> paling kuat dengan skor <b>${data[0].total}/100</b> (${data[0].status}).<br><br>Rekomendasi: Jadikan <b>${data[0].nama}</b> sebagai Mitra Utama untuk jenis <b>${data[0].jenis}</b>. UMKM lain jadi mitra binaan / titip jual.`;
+ compareChart=new Chart(document.getElementById('compareChart'), {type:'bar', data:{labels:['Skor'], datasets:data.map((d,idx)=>({label:d.nama, data:[d.total], backgroundColor:['#2563eb','#16a34a','#ea580c'][idx]}))}, options:{responsive:true, scales:{y:{min:0,max:100}}}});
+ document.getElementById('rekomBanding').innerText=`Keputusan: ${data[0].nama} paling kuat (${data[0].total}/100)`;
 });
-document.getElementById('btnPDF').addEventListener('click', async()=>{ const { jsPDF } = window.jspdf; let doc=new jsPDF('p','mm','a4'); let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2, useCORS:true}); let img=canvas.toDataURL('image/png'); let w=doc.internal.pageSize.getWidth(); let h=(canvas.height*w)/canvas.width; let heightLeft=h; let pos=0; doc.addImage(img,'PNG',0,pos,w,h); heightLeft-=doc.internal.pageSize.getHeight(); while(heightLeft>0){ pos=heightLeft-h; doc.addPage(); doc.addImage(img,'PNG',0,pos,w,h); heightLeft-=doc.internal.pageSize.getHeight(); } doc.save('Laporan-UMKM-Kasih-Kertanegara.pdf'); });
-document.getElementById('btnExcel').addEventListener('click', ()=>{ let csv="No,Nama UMKM,Jenis,Lama,Skor,Status,Produksi Sekarang,Maks,Alat,Omzet jt,Alamat/HP\n"; umkms.map(u=> ({u, s:calcScore(u)})).sort((a,b)=>b.s.total-a.s.total).forEach((x,i)=>{ csv+=`${i+1},"${x.u.nama}","${x.u.jenis}",${x.u.lama},${x.s.total},${x.s.status},${x.u.prod_now},${x.u.prod_max},${x.u.alat},${x.u.omzet},"${x.u.alamat||''}"\n`; }); let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Laporan-UMKM-Kasih-Kertanegara.csv'; a.click(); });
-document.getElementById('btnJPG').addEventListener('click', async()=>{ let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2}); let a=document.createElement('a'); a.href=canvas.toDataURL('image/jpeg',0.9); a.download='Laporan-UMKM-Kasih.jpg'; a.click(); });
+document.getElementById('btnPDF').addEventListener('click', async()=>{ const { jsPDF } = window.jspdf; let doc=new jsPDF('p','mm','a4'); let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2}); let img=canvas.toDataURL('image/png'); let w=doc.internal.pageSize.getWidth(); let h=(canvas.height*w)/canvas.width; doc.addImage(img,'PNG',0,0,w,h); doc.save('Laporan-UMKM.pdf'); });
+document.getElementById('btnExcel').addEventListener('click', ()=>{ let csv="No,Nama,Jenis,Skor,Status,Omzet,Alamat\n"; umkms.map(u=> ({u, s:calcScore(u)})).sort((a,b)=>b.s.total-a.s.total).forEach((x,i)=>{ csv+=`${i+1},"${x.u.nama}","${x.u.jenis}",${x.s.total},${x.s.status},${x.u.omzet||0},"${x.u.alamat||''}"\n`; }); let blob=new Blob([csv],{type:'text/csv'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Laporan-UMKM.csv'; a.click(); });
+document.getElementById('btnJPG').addEventListener('click', async()=>{ let el=document.getElementById('laporanPreview'); let canvas=await html2canvas(el,{scale:2}); let a=document.createElement('a'); a.href=canvas.toDataURL('image/jpeg',0.9); a.download='Laporan-UMKM.jpg'; a.click(); });
 
-function openEdit(id){ currentEditId=id; let u=umkms.find(x=>x.id==id); document.getElementById('modalTitle').innerText='✏️ Edit UMKM'; document.getElementById('modalBody').innerHTML=getModalHTML(u); document.getElementById('modalForm').classList.remove('hidden'); }
-function deleteUMKM(id){ if(confirm('Hapus UMKM ini permanen dari Firebase?')) umkmRef.child(id).remove(); }
-function setTab(t){
- document.getElementById('view-arsip').classList.toggle('hidden', t!='arsip');
- document.getElementById('view-banding').classList.toggle('hidden', t!='banding');
- document.getElementB
+function openEdit(id){ currentEditId=id; let u=umkms.find(x=>x.id==id); document.
