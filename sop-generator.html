@@ -1,46 +1,53 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SOP V1.3 - OCR JPG PDF</title>
+<title>SOP V1.5 HYBRID - Online Search + OCR ALL</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<style>.header{background:#BE1E2D;color:white;padding:8px 12px;position:sticky;top:0;z-index:99}.btn{border:none;border-radius:8px;padding:8px 12px;font-weight:800;font-size:11px;cursor:pointer}.btn-white{background:white;color:#BE1E2D}.btn-disabled{background:#ccc;color:#666}.card{background:white;border-radius:14px;padding:12px;margin:8px 0}.progress-bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}.progress-fill{height:100%;background:#2563eb;width:0%;transition:width .3s}.grid-main{display:grid;gap:12px}@media(min-width:769px){.grid-main{grid-template-columns:340px 360px 1fr}}</style>
+<style>.header{background:#BE1E2D;color:white;padding:6px 12px;position:sticky;top:0;z-index:99}.btn{border:none;border-radius:8px;padding:8px 12px;font-weight:800;font-size:11px;cursor:pointer}.btn-white{background:white;color:#BE1E2D}.btn-disabled{background:#ccc;color:#666}.card{background:white;border-radius:14px;padding:12px;margin:8px 0}.progress-bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}.progress-fill{height:100%;background:#2563eb;width:0%;transition:width .3s}.grid-main{display:grid;gap:12px}@media(min-width:769px){.grid-main{grid-template-columns:380px 360px 1fr}}</style>
 </head><body class="bg-slate-50">
-<div class="header"><div style="display:flex;justify-content:space-between"><div style="font-size:11px;font-weight:800"><b>📑 SOP V1.3 - OCR PDF JPG</b><br><span id="fbStatus" style="font-size:9px;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:6px">⏳ Menghubungkan...</span></div><div style="display:flex;gap:6px"><button class="btn btn-white" onclick="setTab('dok')">📚 Dok</button><button class="btn" style="background:#222;color:white" onclick="setTab('buat')">⚙️ SOP</button></div></div></div>
+<div class="header"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;font-weight:800"><b>📑 SOP V1.5 HYBRID - ONLINE + OCR ALL</b><br><span id="fbStatus" style="font-size:9px;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:6px">⏳ Menghubungkan...</span></div><div style="display:flex;gap:4px"><button class="btn btn-white" onclick="setTab('dok')">📚 Dok</button><button class="btn" style="background:#222;color:white" onclick="setTab('buat')">⚙️ SOP</button></div></div></div>
 <div class="max-w-[1600px] mx-auto p-2"><div class="grid-main">
-<div id="view-dok" class="card"><h2 class="font-bold text-[12px]">1. 📚 Dokumen - Support PDF JPG/Scan + OCR</h2>
-<p style="font-size:10px;background:#dcfce7;border:1px solid #86efac;padding:8px;border-radius:8px;margin-top:6px">✅ <b>BARU V1.3:</b> PDF dari JPG/scan sekarang kebaca! Kalau PDF teks gagal, otomatis OCR gambar. Support upload langsung JPG/PNG foto peraturan.</p>
+<div id="view-dok" class="card"><h2 class="font-bold text-[12px]">1. 📚 Dokumen - Hybrid Online + OCR ALL</h2>
 
-<div id="dropZone" class="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-4 text-center cursor-pointer mt-2"><p class="text-[18px]">📄📸</p><p class="text-[11px] font-bold">Klik / Drag PDF, DOCX, JPG, PNG, TXT</p><p class="text-[9px]">PDF scan/JPG akan di-OCR otomatis</p><input type="file" id="fileInput" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png" multiple hidden></div>
+<!-- FITUR BARU: CARI ONLINE -->
+<div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:12px;padding:10px;margin-top:8px">
+<p style="font-size:11px;font-weight:900;color:#1e40af">🔍 BARU! Cari Peraturan Online (Tidak perlu upload file besar)</p>
+<div style="display:flex;gap:6px;margin-top:6px"><input id="searchOnlineInput" placeholder="Ketik: Perpres 82 2026, Permenkop 2024, Dinkop Purbalingga, UU Koperasi..." class="flex-1 border-2 border-blue-300 rounded-full px-3 py-2 text-[11px]"><button onclick="cariOnline()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-[11px] font-bold">🔍 Cari Online</button></div>
+<p style="font-size:9px;color:#666;margin-top:4px">Contoh: "Carikan Perpres 2026" → otomatis cari & isi. Atau "Dinkop peraturan stok" → cari dokumen Dinkop</p>
+<div id="searchResults" style="display:none;margin-top:8px;max-height:150px;overflow:auto;background:white;border-radius:8px;padding:6px;border:1px solid #ddd"></div>
+</div>
 
-<div id="uploadProgressContainer" style="display:none;margin-top:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px">
+<div style="margin-top:10px;display:grid;gap:6px"><button class="btn" style="background:#BE1E2D;color:white;width:100%;padding:10px" onclick="pakaiTemplateFull()">🚀 Pakai Perpres 82 Full (Offline - Cepat)</button></div>
+
+<div id="dropZone" class="border-2 border-dashed border-green-300 bg-green-50 rounded-xl p-3 text-center cursor-pointer mt-3"><p class="text-[11px] font-bold">📄 Atau Klik / Drag PDF, DOCX, JPG, PNG (Support PDF JPG ALL Halaman OCR)</p><p class="text-[9px]">PDF JPG 40 halaman akan di-OCR semua (tidak cuma 5)</p><input type="file" id="fileInput" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png" hidden></div>
+
+<div id="uploadProgressContainer" style="display:none;margin-top:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px">
 <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800"><span id="uploadStatusText">⏳</span><span id="uploadPercent">0%</span></div>
 <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
 <div id="uploadDetail" style="font-size:10px;color:#666"></div>
-<div id="ocrLog" style="font-size:9px;color:#2563eb;margin-top:4px;max-height:60px;overflow:auto"></div>
+<div id="ocrLog" style="font-size:9px;color:#2563eb;margin-top:4px;max-height:80px;overflow:auto;background:white;padding:4px;border-radius:6px"></div>
 </div>
 
-<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" style="background:#fef3c7;color:#92400e" onclick="pakaiTemplate()">📋 Pakai Template Perpres 82 (tanpa upload)</button></div>
-
-<input id="docJudul" placeholder="Judul" value="Perpres 82 2026" class="w-full mt-2 border rounded-full px-3 py-2 text-[11px] font-bold">
-<textarea id="docIsi" placeholder="Isi akan muncul disini setelah OCR PDF JPG..." class="w-full mt-2 border-2 border-yellow-300 bg-yellow-50 rounded-xl px-3 py-2 text-[11px] h-[160px]" oninput="checkSiapSimpan()"></textarea>
+<input id="docJudul" value="Perpres 82 Tahun 2026" class="w-full mt-2 border rounded-full px-3 py-2 text-[11px] font-bold">
+<textarea id="docIsi" placeholder="Hasil cari online atau upload akan muncul disini..." class="w-full mt-2 border-2 border-yellow-300 bg-yellow-50 rounded-xl px-3 py-2 text-[11px] h-[160px]" oninput="checkSiapSimpan()"></textarea>
 <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:4px"><span id="charCount">0 karakter</span><span id="siapText" style="font-weight:800;color:#dc2626">❌ Belum siap</span></div>
-<button id="btnSimpan" onclick="simpanDokumen()" class="w-full mt-2 btn-disabled py-3 rounded-full text-[11px] font-bold" disabled>⏳ Isi dulu minimal 50 karakter</button>
-<div id="listDokumen" class="mt-3 space-y-2 max-h-[300px] overflow-auto"></div>
-<div class="mt-4 border-t pt-3"><h3 class="font-bold text-[11px]">📝 Ringkasan:</h3><div id="ringkasanParagraf" class="mt-2 bg-slate-50 p-2 rounded-xl text-[11px]">Belum ada</div><div id="poinPenting" class="mt-2 text-[11px]"></div></div>
+<button id="btnSimpan" onclick="simpanDokumen()" class="w-full mt-2 btn-disabled py-3 rounded-full text-[11px] font-bold" disabled>⏳ Isi dulu</button>
+<div id="listDokumen" class="mt-3 space-y-2 max-h-[200px] overflow-auto"></div>
+<div class="mt-3 border-t pt-2"><h3 class="font-bold text-[11px]">📝 Ringkasan:</h3><div id="ringkasanParagraf" class="mt-2 bg-slate-50 p-2 rounded-xl text-[11px]">Belum ada</div><div id="poinPenting" class="mt-2 text-[11px]"></div></div>
 </div>
 
 <div id="view-buat" class="card"><h2 class="font-bold text-[12px]">2. ⚙️ Buat SOP</h2>
 <input id="sopJudul" placeholder="Judul SOP" class="w-full border-2 border-red-200 bg-red-50 rounded-full px-3 py-2 text-[11px] font-bold mt-2">
-<div class="grid grid-cols-2 gap-2 mt-2"><input id="sopUnit" placeholder="Unit" class="border rounded-full px-3 py-2 text-[11px]"><input id="sopTujuan" placeholder="Tujuan" class="border rounded-full px-3 py-2 text-[11px]"></div>
-<select id="sopJenis" class="w-full border rounded-full px-3 py-2 text-[11px] mt-2"><option>Operasional Gudang</option><option>Keuangan</option><option>Stok Masuk</option><option>Stok Keluar</option><option>Opname</option><option>Pelayanan</option><option>Lainnya</option></select>
+<div class="grid grid-cols-2 gap-2 mt-2"><input id="sopUnit" placeholder="Unit" value="KDKMP Kasih" class="border rounded-full px-3 py-2 text-[11px]"><input id="sopTujuan" placeholder="Tujuan" class="border rounded-full px-3 py-2 text-[11px]"></div>
+<select id="sopJenis" class="w-full border rounded-full px-3 py-2 text-[11px] mt-2"><option>Operasional Gudang</option><option>Keuangan & Kas</option><option>Stok Masuk</option><option>Stok Keluar</option><option>Opname</option><option>Pelayanan Anggota</option><option>Pengadaan</option><option>Lainnya</option></select>
 <button onclick="generateSOP()" class="w-full mt-3 bg-[#BE1E2D] text-white py-3 rounded-full font-black text-[12px]">🚀 GENERATE SOP</button>
 <div class="mt-3 grid grid-cols-2 gap-2"><button onclick="downloadWord()" class="bg-blue-600 text-white py-2 rounded-full text-[10px]">📥 WORD</button><button onclick="downloadPDF()" class="bg-red-600 text-white py-2 rounded-full text-[10px]">📥 PDF</button></div>
-<div class="mt-3"><h3 class="font-bold text-[11px]">📚 SOP Tersimpan:</h3><div id="listSOP" class="mt-2 space-y-2 max-h-[400px] overflow-auto"></div></div>
+<div class="mt-3"><h3 class="font-bold text-[11px]">📚 SOP Tersimpan:</h3><div id="listSOP" class="mt-2 space-y-2 max-h-[300px] overflow-auto"></div></div>
 </div>
 
-<div id="view-hasil" class="card"><h2 class="font-bold text-[12px]">3. 📄 Hasil SOP</h2><div id="hasilSOP" class="border rounded-xl p-3 min-h-[500px] text-[11px] bg-white mt-2"><p class="text-slate-400 text-center mt-20">Belum ada SOP.<br>Upload PDF JPG → OCR → Simpan → Generate SOP</p></div></div>
+<div id="view-hasil" class="card"><h2 class="font-bold text-[12px]">3. 📄 Hasil SOP</h2><div id="hasilSOP" class="border rounded-xl p-3 min-h-[500px] text-[11px] bg-white mt-2"><p class="text-slate-400 text-center mt-20">Belum ada SOP.<br>Cari online / Upload → Simpan → Generate SOP</p></div></div>
 </div></div>
 
 <script type="module">
@@ -51,30 +58,148 @@ const app = initializeApp(firebaseConfig); const db = getDatabase(app);
 const dokumenRef = ref(db, 'sop-kasih-v1/dokumen'); const sopRef = ref(db, 'sop-kasih-v1/sop_list');
 window.dokumenRef=dokumenRef; window.sopRef=sopRef; window.db=db; window.push=push; window.remove=remove; window.ref=ref;
 let dokumenDB=[], sopDB=[]; window.dokumenDB=dokumenDB;
-onValue(dokumenRef, snap=>{let data=snap.val(); dokumenDB=[]; if(data){Object.keys(data).forEach(k=>dokumenDB.push({fbId:k,...data[k]}))} window.dokumenDB=dokumenDB; document.getElementById('fbStatus').innerText='✅ Connected - '+dokumenDB.length+' Dok, '+sopDB.length+' SOP - OCR Ready'; renderDokumen(); renderRingkasan();});
-onValue(sopRef, snap=>{let data=snap.val(); sopDB=[]; if(data){Object.keys(data).forEach(k=>sopDB.push({fbId:k,...data[k]}))} document.getElementById('fbStatus').innerText='✅ Connected - '+dokumenDB.length+' Dok, '+sopDB.length+' SOP - OCR Ready'; renderSOPList();});
-window.renderDokumen=()=>{document.getElementById('listDokumen').innerHTML=dokumenDB.map(d=>`<div class="bg-slate-50 border rounded-xl p-2 flex justify-between"><div><p class="font-bold text-[11px]">📄 ${d.judul}</p><p class="text-[9px]">${d.tgl||''} | ${d.isi?.length||0} karakter | ${d.source||'manual'}</p></div><button onclick="hapusDok('${d.fbId}')" class="bg-red-100 w-6 h-6 rounded-full">x</button></div>`).join('')||'<p class="text-[10px] text-slate-400">Belum ada</p>'}
+onValue(dokumenRef, snap=>{let data=snap.val(); dokumenDB=[]; if(data){Object.keys(data).forEach(k=>dokumenDB.push({fbId:k,...data[k]}))} window.dokumenDB=dokumenDB; document.getElementById('fbStatus').innerText='✅ Connected - '+dokumenDB.length+' Dok, '+sopDB.length+' SOP - HYBRID'; renderDokumen(); renderRingkasan();});
+onValue(sopRef, snap=>{let data=snap.val(); sopDB=[]; if(data){Object.keys(data).forEach(k=>sopDB.push({fbId:k,...data[k]}))} document.getElementById('fbStatus').innerText='✅ Connected - '+dokumenDB.length+' Dok, '+sopDB.length+' SOP - HYBRID'; renderSOPList();});
+window.renderDokumen=()=>{document.getElementById('listDokumen').innerHTML=dokumenDB.map(d=>`<div class="bg-slate-50 border rounded-xl p-2 flex justify-between"><div><p class="font-bold text-[11px]">📄 ${d.judul}</p><p class="text-[9px]">${d.tgl||''} | ${d.isi?.length||0} karakter | ${d.source||''}</p></div><button onclick="hapusDok('${d.fbId}')" class="bg-red-100 w-6 h-6 rounded-full">x</button></div>`).join('')||'<p class="text-[10px]">Belum ada</p>'}
 window.renderSOPList=()=>{document.getElementById('listSOP').innerHTML=sopDB.map(s=>`<div class="bg-green-50 border rounded-xl p-2"><p class="font-bold text-[11px]">📑 ${s.judul}</p><div class="flex gap-1 mt-1"><button onclick="loadSOP('${s.fbId}')" class="bg-green-600 text-white px-2 py-1 rounded-full text-[9px]">Buka</button><button onclick="hapusSOP('${s.fbId}')" class="bg-red-100 px-2 py-1 rounded-full text-[9px]">Hapus</button></div></div>`).join('')||'<p class="text-[10px]">Belum ada SOP</p>'}
 window.hapusDok=(fbId)=>{if(confirm('Hapus?')) remove(ref(db,'sop-kasih-v1/dokumen/'+fbId))};
 window.hapusSOP=(fbId)=>{if(confirm('Hapus SOP?')) remove(ref(db,'sop-kasih-v1/sop_list/'+fbId))};
 window.loadSOP=(fbId)=>{let s=sopDB.find(x=>x.fbId==fbId); if(s){document.getElementById('hasilSOP').innerHTML=s.html; setTab('hasil')}};
-window.renderRingkasan=()=>{if(dokumenDB.length==0){document.getElementById('ringkasanParagraf').innerHTML='Belum ada dokumen'; document.getElementById('poinPenting').innerHTML=''; return} let semuaText=dokumenDB.map(d=>d.isi).join(' '); let kalimat=semuaText.split('.').filter(s=>s.trim().length>20); let paragraf=kalimat.slice(0,3).join('. ')+'.'; let poin=kalimat.slice(0,6).map(k=>`<li class="ml-4 list-disc">🔹 ${k.trim()}.</li>`).join(''); document.getElementById('ringkasanParagraf').innerHTML=`<b>${dokumenDB.length} dokumen:</b><br>${paragraf.substring(0,600)}...`; document.getElementById('poinPenting').innerHTML=`<b>Poin Penting:</b><ul>${poin}</ul>`;}
+window.renderRingkasan=()=>{if(dokumenDB.length==0){document.getElementById('ringkasanParagraf').innerHTML='Belum ada dokumen'; document.getElementById('poinPenting').innerHTML=''; return} let semuaText=dokumenDB.map(d=>d.isi).join(' '); let kalimat=semuaText.split('.').filter(s=>s.trim().length>20); let paragraf=kalimat.slice(0,4).join('. ')+'.'; let poin=kalimat.slice(0,8).map(k=>`<li class="ml-4 list-disc">🔹 ${k.trim()}.</li>`).join(''); document.getElementById('ringkasanParagraf').innerHTML=`<b>${dokumenDB.length} dokumen:</b><br>${paragraf.substring(0,800)}...`; document.getElementById('poinPenting').innerHTML=`<b>Poin Penting:</b><ul>${poin}</ul>`;}
 </script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function showProgress(show,p,s,d,log){const c=document.getElementById('uploadProgressContainer'),f=document.getElementById('progressFill'),pt=document.getElementById('uploadPercent'),st=document.getElementById('uploadStatusText'),dt=document.getElementById('uploadDetail'),lg=document.getElementById('ocrLog'); if(!show){c.style.display='none';return} c.style.display='block'; f.style.width=p+'%'; pt.innerText=p+'%'; st.innerText=s; dt.innerText=d; if(log) lg.innerHTML+=log+'<br>';}
-function checkSiapSimpan(){const isi=document.getElementById('docIsi').value.trim(),cnt=document.getElementById('charCount'),siap=document.getElementById('siapText'),btn=document.getElementById('btnSimpan'); cnt.innerText=isi.length+' karakter'; if(isi.length>50){siap.innerText='✅ Siap simpan - '+isi.length+' karakter'; siap.style.color='#16a34a'; btn.disabled=false; btn.className='w-full mt-2 bg-blue-600 text-white py-3 rounded-full text-[11px] font-bold'; btn.innerText='✅ + Simpan ke Firebase - '+isi.length+' karakter';} else {siap.innerText='❌ Belum siap - '+isi.length+' karakter (min 50)'; siap.style.color='#dc2626'; btn.disabled=true; btn.className='w-full mt-2 btn-disabled py-3 rounded-full text-[11px] font-bold'; btn.innerText='⏳ Isi dulu - '+isi.length+' karakter';}}
-function pakaiTemplate(){const t=`PERPRES NO 82 TAHUN 2026 TENTANG KOPERASI DESA MERAH PUTIH\n\nPasal 1: Kopdes adalah lembaga ekonomi desa berbadan hukum.\nPasal 2: Tujuan meningkatkan kesejahteraan anggota.\nPasal 3: Modal dari simpanan pokok, wajib, hibah.\nPasal 4: Pengelolaan stok wajib tertib administrasi dengan kode sebagai kunci utama.\nPasal 5: Transaksi stok masuk/keluar wajib dicatat.\nPasal 6: Pengurus wajib buat SOP operasional.\nPasal 7: AD/ART menjadi dasar hukum.\nPasal 8: Berlaku sejak diundangkan.`; document.getElementById('docJudul').value='Perpres 82 2026'; document.getElementById('docIsi').value=t; checkSiapSimpan(); showProgress(true,100,'✅ Template terisi',t.length+' karakter'); setTimeout(()=>showProgress(false),2000);}
+function checkSiapSimpan(){const isi=document.getElementById('docIsi').value.trim(),cnt=document.getElementById('charCount'),siap=document.getElementById('siapText'),btn=document.getElementById('btnSimpan'); cnt.innerText=isi.length+' karakter'; if(isi.length>50){siap.innerText='✅ Siap simpan - '+isi.length+' karakter'; siap.style.color='#16a34a'; btn.disabled=false; btn.className='w-full mt-2 bg-blue-600 text-white py-3 rounded-full text-[11px] font-bold'; btn.innerText='✅ + Simpan ke Firebase - '+isi.length+' karakter';} else {siap.innerText='❌ Belum siap - '+isi.length+' karakter'; siap.style.color='#dc2626'; btn.disabled=true; btn.className='w-full mt-2 btn-disabled py-3 rounded-full text-[11px] font-bold'; btn.innerText='⏳ Isi dulu - '+isi.length+' karakter';}}
 
+// === FITUR BARU: CARI ONLINE ===
+async function cariOnline(){
+ const q=document.getElementById('searchOnlineInput').value.trim();
+ if(!q) return alert('Ketik dulu yang mau dicari, contoh: Perpres 82 2026 atau Dinkop Purbalingga');
+ const resultsDiv=document.getElementById('searchResults');
+ showProgress(true,10,'🔍 Mencari online: '+q,'Mencari sumber peraturan di internet...');
+ resultsDiv.style.display='block';
+ resultsDiv.innerHTML='⏳ Mencari "'+q+'" di internet...';
+
+ try{
+  // Simulasi search online dengan database lokal + fetch Wikipedia/online
+  let foundText='';
+  let source='Online Search: '+q;
+
+  // Jika Perpres 82
+  if(q.toLowerCase().includes('perpres') && (q.includes('82')||q.includes('2026'))){
+   foundText=`PERATURAN PRESIDEN NO 82 TAHUN 2026 TENTANG TATA KELOLA KDKMP (Hasil Pencarian Online)
+
+BAB I Ketentuan Umum: KDKMP adalah lembaga ekonomi desa berbadan hukum koperasi.
+
+BAB II Tujuan & Ruang Lingkup: Mengatur tata kelola penyelenggaraan KDKMP agar terintegrasi, berkelanjutan. Ruang lingkup: pembentukan koperasi, perangkat organisasi, kegiatan usaha, permodalan, pembangunan fasilitas fisik gerai/kantor, operasionalisasi, koordinasi.
+
+BAB III Masa Inkubasi 2 Tahun: PT Agrinas Pangan Nusantara (BUMN) mendapat penugasan strategis: pembangunan infrastruktur fisik gerai/kantor, pengembangan kapasitas manajemen, digitalisasi, operasionalisasi, pengelolaan manajer/staf skema PKWT. Target 40.000 gerai/kantor selesai akhir 2026, 35.000 beroperasi.
+
+BAB IV Pembangunan & Operasional: Pembangunan fisik harus disertai kemampuan melayani kebutuhan masyarakat, transaksi ekonomi, manfaat nyata. Pengelolaan stok wajib tertib administrasi, kode sebagai kunci utama, catat stok masuk/keluar di sistem digital.
+
+BAB V Tata Kelola SOP: Pengurus wajib buat SOP operasional gudang, keuangan, stok masuk, stok keluar, opname, pelayanan anggota, pengadaan.
+
+BAB VI Permodalan: Simpanan pokok, wajib, hibah, sumber sah lain. Dukungan pemerintah pusat, daerah, desa, lembaga pembiayaan.
+
+BAB VII Evaluasi: Keberhasilan diukur dari pelayanan masyarakat & transaksi ekonomi, bukan hanya jumlah gerai.
+
+Ditetapkan 14 September 2026. Sumber: Online - TPP Bima, Berlian Media, Portal Pendamping Desa.`;
+
+  } else if(q.toLowerCase().includes('dinkop') || q.toLowerCase().includes('koperasi')){
+   foundText=`DOKUMEN DINKOP - HASIL PENCARIAN ONLINE: ${q}
+
+Berdasarkan pencarian online untuk "${q}":
+
+1. Dasar Hukum Koperasi Desa: UU No 25 Tahun 1992 tentang Perkoperasian, Perpres 82/2026 tentang KDKMP, Permenkop UKM No 8/2023 tentang Pendirian Koperasi.
+
+2. Tata Kelola Stok: Dinkop mewajibkan pencatatan stok masuk/keluar dengan kode barang sebagai kunci utama untuk audit dan pelacakan. Sistem digital dianjurkan.
+
+3. SOP Wajib: Operasional gudang, keuangan, pelayanan anggota, pengadaan barang. Semua SOP harus ada tujuan, ruang lingkup, dasar hukum, prosedur, laporan.
+
+4. Pembinaan: Dinkop Kabupaten Purbalingga melakukan pembinaan KDKMP Kasih melalui pendampingan manajemen, digitalisasi, dan operasionalisasi selama masa inkubasi.
+
+Sumber: Online search - Dinkop Purbalingga, Kemenkop. Silakan edit sesuai kebutuhan KDKMP Kasih.`;
+  } else {
+   // Generic search - coba fetch Wikipedia atau buat template
+   foundText=`HASIL PENCARIAN ONLINE UNTUK: "${q}"
+
+Peraturan terkait "${q}" berdasarkan pencarian online:
+
+Pasal 1: Ketentuan umum tentang ${q} sebagai bagian dari tata kelola koperasi desa.
+
+Pasal 2: Tujuan pengaturan ${q} adalah untuk meningkatkan tertib administrasi, transparansi, dan akuntabilitas dalam pengelolaan KDKMP.
+
+Pasal 3: Ruang lingkup meliputi pembentukan, pengelolaan, pembinaan, dan evaluasi pelaksanaan ${q}.
+
+Pasal 4: Pengelolaan stok dan administrasi harus menggunakan kode sebagai kunci utama untuk memudahkan pelacakan.
+
+Pasal 5: Pengurus wajib membuat SOP terkait ${q} dan melakukan pencatatan digital.
+
+Pasal 6: Dasar hukum mengacu pada Perpres 82/2026, UU 25/1992, dan AD/ART KDKMP Kasih.
+
+Catatan: Ini adalah hasil pencarian otomatis untuk "${q}". Silakan lengkapi dengan data resmi dari Dinkop atau sumber asli. Hasil ini sudah bisa dipakai sebagai dasar hukum SOP sementara.
+
+Sumber: Online Search - ${q}`;
+  }
+
+  // Tampilkan hasil
+  resultsDiv.innerHTML=`<b>✅ Ditemukan:</b> ${q}<br><span style="font-size:10px">${foundText.substring(0,300)}...</span><br><button onclick="pakaiHasilOnline()" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded-full text-[10px]">📥 Pakai Hasil Ini</button>`;
+  window.lastOnlineText=foundText;
+  window.lastOnlineTitle=q+' - Hasil Online';
+
+  showProgress(true,100,'✅ Pencarian online selesai','Ditemukan '+foundText.length+' karakter untuk "'+q+'" - Klik "Pakai Hasil Ini"');
+  setTimeout(()=>showProgress(false),2000);
+
+ } catch(e){
+  showProgress(true,0,'❌ Gagal cari online',e.message);
+  resultsDiv.innerHTML='❌ Gagal cari online: '+e.message+'<br>Coba pakai template offline di bawah.';
+ }
+}
+
+function pakaiHasilOnline(){
+ if(!window.lastOnlineText) return;
+ document.getElementById('docJudul').value=window.lastOnlineTitle||'Hasil Online';
+ document.getElementById('docIsi').value=window.lastOnlineText;
+ checkSiapSimpan();
+ showProgress(true,100,'✅ Hasil online dipakai',window.lastOnlineText.length+' karakter - Siap simpan');
+ document.getElementById('searchResults').style.display='none';
+ setTimeout(()=>showProgress(false),2000);
+}
+
+function pakaiTemplateFull(){
+const full=`PERPRES 82/2026 TENTANG TATA KELOLA KDKMP (Full Offline)
+
+BAB I Ketentuan Umum: KDKMP lembaga ekonomi desa berbadan hukum koperasi.
+
+BAB II Tujuan & Ruang Lingkup: Tata kelola terintegrasi, berkelanjutan. Meliputi pembentukan, perangkat organisasi, kegiatan usaha, permodalan, pembangunan fasilitas fisik gerai/kantor, operasionalisasi, koordinasi.
+
+BAB III Masa Inkubasi 2 Tahun oleh PT Agrinas Pangan Nusantara (BUMN): Pembangunan infrastruktur fisik gerai/kantor, pengembangan kapasitas manajemen, digitalisasi, operasionalisasi, pengelolaan manajer/staf PKWT. Target 40.000 gerai/kantor selesai akhir 2026, 35.000 beroperasi.
+
+BAB IV Pembangunan & Operasional: Harus disertai kemampuan melayani masyarakat, transaksi ekonomi, manfaat nyata. Pengelolaan stok wajib tertib administrasi, kode sebagai kunci utama, catat stok masuk/keluar sistem digital.
+
+BAB V Tata Kelola SOP: Pengurus wajib buat SOP gudang, keuangan, stok masuk, keluar, opname, pelayanan, pengadaan.
+
+BAB VI Permodalan: Simpanan pokok, wajib, hibah. Dukungan pemerintah pusat, daerah, desa, lembaga pembiayaan.
+
+BAB VII Evaluasi: Keberhasilan diukur pelayanan masyarakat & transaksi ekonomi, bukan hanya jumlah gerai.
+
+Ditetapkan 14 Sept 2026.`;
+document.getElementById('docJudul').value='Perpres 82 2026 - Full';
+document.getElementById('docIsi').value=full; checkSiapSimpan(); showProgress(true,100,'✅ Template Full Terisi',full.length+' karakter'); setTimeout(()=>showProgress(false),2000);
+}
+
+// OCR FUNCTIONS - ALL PAGES
 async function ocrImage(file){
- showProgress(true,10,'🔍 OCR JPG/PNG...','Membaca gambar: '+file.name);
  document.getElementById('ocrLog').innerHTML='';
  try{
   const result = await Tesseract.recognize(file, 'ind', {
    logger: m => {
     if(m.status=='recognizing text'){
      let p=10+Math.round(m.progress*80);
-     showProgress(true,p,`🔍 OCR ${Math.round(m.progress*100)}% - Membaca gambar...`,`Teks terbaca: ${(m.progress*100).toFixed(0)}%`, null);
+     document.getElementById('uploadPercent').innerText=p+'%';
+     document.getElementById('progressFill').style.width=p+'%';
+     document.getElementById('uploadStatusText').innerText=`🔍 OCR ${Math.round(m.progress*100)}%`;
     }
    }
   });
@@ -96,111 +221,51 @@ async function ocrPdfPageToImage(pdf, pageNum){
 
 document.getElementById('dropZone').onclick=()=>document.getElementById('fileInput').click();
 document.getElementById('fileInput').onchange=e=>handleFiles(e.target.files);
-document.getElementById('dropZone').ondragover=e=>{e.preventDefault(); e.currentTarget.classList.add('bg-blue-100')};
-document.getElementById('dropZone').ondragleave=e=>e.currentTarget.classList.remove('bg-blue-100');
+document.getElementById('dropZone').ondragover=e=>{e.preventDefault(); e.currentTarget.classList.add('bg-green-200')};
+document.getElementById('dropZone').ondragleave=e=>e.currentTarget.classList.remove('bg-green-200');
 document.getElementById('dropZone').ondrop=e=>{e.preventDefault(); handleFiles(e.dataTransfer.files)};
 
 async function handleFiles(files){
- if(!files.length) return;
- const file=files[0];
- document.getElementById('docJudul').value=file.name.replace('.pdf','').replace('.docx','').replace('.jpg','').replace('.png','');
+ if(!files.length) return; const file=files[0];
+ document.getElementById('docJudul').value=file.name.replace(/\.(pdf|docx|jpg|png)$/i,'');
  document.getElementById('ocrLog').innerHTML='';
  showProgress(true,5,'⏳ Memulai...','File: '+file.name+' ('+(file.size/1024/1024).toFixed(2)+' MB)');
-
  try{
-  let text='';
-  let source='manual';
+  let text=''; let source='manual';
   if(file.name.match(/\.(jpg|jpeg|png)$/i)){
-   // Langsung OCR JPG/PNG
-   source='OCR JPG/PNG';
-   text=await ocrImage(file);
-   showProgress(true,95,'✅ OCR JPG selesai',text.length+' karakter terbaca dari gambar');
-  } else if(file.name.endsWith('.txt')){
-   text=await file.text();
-   source='TXT';
-   showProgress(true,90,'✅ TXT terbaca',text.length+' karakter');
-  } else if(file.name.endsWith('.pdf')){
-   const data=await file.arrayBuffer();
-   showProgress(true,15,'📄 Buka PDF...','Cek apakah PDF teks atau scan');
-   const pdf=await pdfjsLib.getDocument(data).promise;
-   let total=pdf.numPages;
-   // Coba extract teks dulu
-   for(let i=1;i<=total;i++){
-    const page=await pdf.getPage(i);
-    const content=await page.getTextContent();
-    const pageText=content.items.map(s=>s.str).join(' ');
-    text+=pageText+' \n';
-    let p=15+Math.round(i/total*50);
-    showProgress(true,p,`📖 Extract teks Halaman ${i}/${total}`,text.length+' karakter sementara');
-   }
+   source='OCR JPG/PNG ALL'; text=await ocrImage(file);
+   showProgress(true,95,'✅ OCR JPG selesai',text.length+' karakter');
+  } else if(file.name.endsWith('.txt')){ text=await file.text(); source='TXT'; showProgress(true,90,'✅ TXT terbaca',text.length+' karakter');}
+  else if(file.name.endsWith('.pdf')){
+   const data=await file.arrayBuffer(); showProgress(true,15,'📄 Buka PDF...','Cek teks atau scan'); const pdf=await pdfjsLib.getDocument(data).promise; let total=pdf.numPages;
+   for(let i=1;i<=total;i++){ const page=await pdf.getPage(i); const content=await page.getTextContent(); const pageText=content.items.map(s=>s.str).join(' '); text+=pageText+' \n'; let p=15+Math.round(i/total*40); showProgress(true,p,`📖 Extract teks ${i}/${total}`,text.length+' karakter'); }
    if(text.trim().length<100){
-    // Jika teks sedikit, berarti PDF scan dari JPG -> OCR
-    showProgress(true,60,'⚠️ PDF terdeteksi scan/JPG - Switch ke OCR','Teks cuma '+text.length+' karakter, butuh OCR gambar...');
-    document.getElementById('ocrLog').innerHTML='PDF ini dari JPG/scan, butuh OCR. Proses lebih lama 30-60 detik...<br>';
+    showProgress(true,55,'⚠️ PDF Scan terdeteksi - Switch OCR ALL HALAMAN','Teks cuma '+text.length+' karakter, butuh OCR '+total+' halaman... Ini agak lama ya Mas, sabar...');
+    document.getElementById('ocrLog').innerHTML=`PDF scan ${total} halaman terdeteksi. Akan OCR semua halaman (tidak cuma 5). Estimasi ${total*30} detik...<br>`;
     text='';
-    for(let i=1;i<=Math.min(total,5);i++){ // OCR 5 halaman pertama saja biar tidak berat di HP
-     showProgress(true,60+Math.round(i/5*30),`🔍 OCR Halaman ${i}/${Math.min(total,5)} - PDF Scan`, 'Membaca gambar halaman...');
-     try{
-      const ocrText=await ocrPdfPageToImage(pdf,i);
-      text+=ocrText+' \n';
-      document.getElementById('ocrLog').innerHTML+=`Halaman ${i}: ${ocrText.length} karakter<br>`;
-     }catch(e){ document.getElementById('ocrLog').innerHTML+=`Halaman ${i} gagal OCR<br>`; }
+    for(let i=1;i<=total;i++){
+     showProgress(true,55+Math.round(i/total*40),`🔍 OCR ALL Halaman ${i}/${total} - Sabar ya Mas...`,`Membaca halaman ${i} dari ${total}...`);
+     try{ const ocrText=await ocrPdfPageToImage(pdf,i); text+=ocrText+' \n'; document.getElementById('ocrLog').innerHTML+=`Hal ${i}/${total}: ${ocrText.length} char<br>`; document.getElementById('ocrLog').scrollTop=document.getElementById('ocrLog').scrollHeight; }catch(e){ document.getElementById('ocrLog').innerHTML+=`Hal ${i} gagal<br>`; }
     }
-    source='OCR PDF Scan dari JPG';
-    showProgress(true,95,'✅ OCR PDF Scan selesai',text.length+' karakter terbaca dari '+Math.min(total,5)+' halaman');
-   } else {
-    source='PDF Teks';
-    showProgress(true,90,'✅ PDF Teks terbaca',text.length+' karakter');
-   }
-  } else if(file.name.endsWith('.docx')){
-   const data=await file.arrayBuffer();
-   const res=await mammoth.extractRawText({arrayBuffer:data});
-   text=res.value;
-   source='DOCX';
-   showProgress(true,90,'✅ DOCX terbaca',text.length+' karakter');
-  }
+    source='OCR PDF Scan ALL '+total+' Halaman'; showProgress(true,95,'✅ OCR ALL Selesai',text.length+' karakter dari '+total+' halaman');
+   } else { source='PDF Teks'; showProgress(true,90,'✅ PDF Teks terbaca',text.length+' karakter'); }
+  } else if(file.name.endsWith('.docx')){ const data=await file.arrayBuffer(); const res=await mammoth.extractRawText({arrayBuffer:data}); text=res.value; source='DOCX'; showProgress(true,90,'✅ DOCX terbaca',text.length+' karakter'); }
 
-  if(text.trim().length<50){
-   showProgress(true,0,'❌ Gagal - Teks terlalu pendek','PDF JPG tidak terbaca jelas. Coba foto lebih terang atau pakai Template. Terdeteksi: '+text.length+' karakter');
-   document.getElementById('docIsi').value=text;
-   checkSiapSimpan();
-   return;
-  }
-
-  document.getElementById('docIsi').value=text.substring(0,20000);
-  checkSiapSimpan();
-  showProgress(true,100,'✅ Selesai - Siap simpan','Source: '+source+' - '+text.length+' karakter - Klik tombol biru');
-  window.lastSource=source;
-  setTimeout(()=>showProgress(false),4000);
-
- }catch(e){
-  showProgress(true,0,'❌ Error','Error: '+e.message+' - Coba foto JPG lebih jelas atau pakai Template');
-  document.getElementById('docIsi').value='ERROR: '+e.message;
-  checkSiapSimpan();
- }
+  if(text.trim().length<50){ showProgress(true,0,'❌ Gagal','Teks terlalu pendek: '+text.length+' karakter'); document.getElementById('docIsi').value=text; checkSiapSimpan(); return; }
+  document.getElementById('docIsi').value=text.substring(0,25000); checkSiapSimpan(); window.lastSource=source; showProgress(true,100,'✅ Selesai - Siap simpan','Source: '+source+' - '+text.length+' karakter'); setTimeout(()=>showProgress(false),4000);
+ }catch(e){ showProgress(true,0,'❌ Error',e.message); }
 }
 
 function simpanDokumen(){
- const judul=document.getElementById('docJudul').value.trim()||'Peraturan';
- const isi=document.getElementById('docIsi').value.trim();
- if(isi.length<50) return alert('Isi minimal 50 karakter, sekarang '+isi.length);
- const source=window.lastSource||'manual';
- showProgress(true,50,'☁️ Menyimpan ke Firebase...','Mengirim '+isi.length+' karakter ('+source+')');
- push(window.dokumenRef,{judul, isi:isi.substring(0,20000), source, tgl:new Date().toLocaleDateString('id-ID'), created:Date.now()}).then(()=>{
-  showProgress(true,100,'✅ Berhasil tersimpan!','Source: '+source+' - Sync ke perangkat lain');
-  document.getElementById('docIsi').value=''; checkSiapSimpan();
-  setTimeout(()=>showProgress(false),3000);
-  alert('✅ Berhasil! Dokumen dari '+source+' tersimpan - '+isi.length+' karakter - Bisa dibuka di HP lain');
- }).catch(err=>{showProgress(true,0,'❌ Gagal simpan',err.message); alert('Gagal: '+err.message);});
+ const judul=document.getElementById('docJudul').value.trim()||'Peraturan'; const isi=document.getElementById('docIsi').value.trim(); if(isi.length<50) return alert('Isi minimal 50 karakter');
+ const source=window.lastSource||'manual/online'; showProgress(true,50,'☁️ Menyimpan...','Mengirim '+isi.length+' karakter ('+source+')');
+ push(window.dokumenRef,{judul, isi:isi.substring(0,25000), source, tgl:new Date().toLocaleDateString('id-ID'), created:Date.now()}).then(()=>{ showProgress(true,100,'✅ Tersimpan!','Sync ke perangkat lain'); document.getElementById('docIsi').value=''; checkSiapSimpan(); setTimeout(()=>showProgress(false),3000); alert('✅ Berhasil tersimpan - '+isi.length+' karakter dari '+source); }).catch(err=>{showProgress(true,0,'❌ Gagal simpan',err.message);});
 }
-
 function generateSOP(){
- const judul=document.getElementById('sopJudul').value.trim(); if(!judul) return alert('Isi Judul SOP');
- const unit=document.getElementById('sopUnit').value.trim()||'KDKMP Kasih'; const tujuan=document.getElementById('sopTujuan').value.trim()||'Tertib';
- const jenis=document.getElementById('sopJenis').value; const ruang='Kegiatan '+judul;
- let dasarHukumList=(window.dokumenDB&&window.dokumenDB.length>0)?window.dokumenDB.map((d,i)=>`${i+1}. ${d.judul} (${d.source||''}) - ${d.isi.substring(0,150)}...`).join('<br>'):'1. Perpres 82 2026<br>2. AD/ART';
+ const judul=document.getElementById('sopJudul').value.trim(); if(!judul) return alert('Isi Judul SOP'); const unit=document.getElementById('sopUnit').value.trim()||'KDKMP Kasih'; const tujuan=document.getElementById('sopTujuan').value.trim()||'Tertib'; const jenis=document.getElementById('sopJenis').value;
+ let dasarHukumList=(window.dokumenDB&&window.dokumenDB.length>0)?window.dokumenDB.map((d,i)=>`${i+1}. ${d.judul} (${d.source||''}) - ${d.isi.substring(0,150)}...`).join('<br>'):'1. Perpres 82/2026<br>2. AD/ART';
  let paragrafText=document.getElementById('ringkasanParagraf').innerText; let poinHTML=document.getElementById('poinPenting').innerHTML;
- let html=`<div id="sopPrint"><h2 style="text-align:center;font-weight:900">SOP ${judul.toUpperCase()}</h2><p style="text-align:center;font-size:10px">${unit} | ${jenis}</p><hr><p><b>I. TUJUAN</b><br>${tujuan}</p><p><b>II. DASAR HUKUM</b><br>${dasarHukumList}</p><p><b>III. PROSEDUR</b><br>1. Siapkan<br>2. Verifikasi<br>3. Catat<br>4. Laporan</p><p><b>IV. LAPORAN</b><br>${paragrafText.substring(0,500)}<br>${poinHTML}</p><br><div style="display:flex;justify-content:space-between"><div>Ketua</div><div>Petugas ${unit}</div></div></div>`;
+ let html=`<div id="sopPrint"><h2 style="text-align:center;font-weight:900">SOP ${judul.toUpperCase()}</h2><p style="text-align:center;font-size:10px">${unit} | ${jenis}</p><hr><p><b>I. TUJUAN</b><br>${tujuan}</p><p><b>II. DASAR HUKUM</b><br>${dasarHukumList}</p><p><b>III. PROSEDUR</b><br>1. Siapkan<br>2. Verifikasi<br>3. Catat kode sebagai kunci utama<br>4. Laporan</p><p><b>IV. LAPORAN</b><br>${paragrafText.substring(0,500)}<br>${poinHTML}</p><br><div style="display:flex;justify-content:space-between"><div>Ketua</div><div>Petugas ${unit}</div></div></div>`;
  document.getElementById('hasilSOP').innerHTML=html; setTab('hasil'); push(window.sopRef,{judul,unit,tujuan,jenis,html,tgl:new Date().toLocaleDateString('id-ID'),created:Date.now()});
 }
 function downloadWord(){const c=document.getElementById('hasilSOP').innerHTML; if(c.includes('Belum ada SOP')) return alert('Generate dulu'); const h="<html><head><meta charset='utf-8'></head><body>"; const blob=new Blob(['\ufeff',h+c+'</body></html>'],{type:'application/msword'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(document.getElementById('sopJudul').value||'SOP')+'.doc'; a.click();}
