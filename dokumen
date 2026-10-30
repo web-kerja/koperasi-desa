@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KDKMP KASIH - DOC Firebase</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Merriweather:wght@400;700&display=swap');
+*{font-family:'Outfit',sans-serif} .paper{font-family:'Merriweather',serif}
+.input{border:1.5px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; width:100%; background:white}
+.input:focus{border-color:#BE1E2D; outline:none} .label{font-size:10px; font-weight:900; color:#BE1E2D; text-transform:uppercase}
+@media print{.no-print{display:none!important}}
+</style>
+</head>
+<body class="bg-[#f8fafc] pb-[120px]">
+<!-- HEADER -->
+<div class="bg-[#BE1E2D] text-white p-4 sticky top-0 z-50">
+<div class="flex justify-between items-center max-w-[800px] mx-auto">
+<div><b class="text-[14px]">📑 KDKMP KASIH - FIREBASE</b><p class="text-[10px] opacity-80" id="fbStatus">Menghubungkan ke Firebase...</p></div>
+<button id="btnSaveFb" class="bg-white text-[#BE1E2D] px-4 py-2 rounded-full text-[10px] font-black">☁️ SIMPAN KE FIREBASE</button>
+</div>
+</div>
+
+<div class="max-w-[800px] mx-auto p-3 space-y-4">
+<!-- KOP EDITABLE -->
+<div class="bg-white rounded-2xl p-4 shadow-sm no-print border-2 border-amber-200">
+<h2 class="font-black text-[12px] mb-3">🏢 KOP SURAT (Isi Dadakan - Sekali aja)</h2>
+<div class="grid grid-cols-2 gap-2">
+<div><p class="label">Nama Koperasi</p><input id="kop-nama" class="input" value="KOPERASI DESA MERAH PUTIH (KDKMP) KASIH"></div>
+<div><p class="label">Alamat</p><input id="kop-alamat" class="input" value="Desa Kasih, Bobotsari, Purbalingga 53355"></div>
+<div><p class="label">Email / HP</p><input id="kop-kontak" class="input" value="kdkmp.kasih@gmail.com | 0812-xxxx-xxxx"></div>
+<div><p class="label">Ketua</p><input id="kop-ketua" class="input" value="Parno, S.Pd"></div>
+<div><p class="label">Sekretaris</p><input id="kop-sekret" class="input" value="Sekretaris"></div>
+<div><p class="label">Logo URL (kosongkan jika tidak ada)</p><input id="kop-logo" class="input" placeholder="https://.../logo.png"></div>
+</div>
+</div>
+
+<!-- TEMPLATE -->
+<div class="bg-white rounded-2xl p-4 shadow-sm no-print">
+<h2 class="font-black text-[12px] mb-3">1️⃣ PILIH TEMPLATE (9 Template)</h2>
+<div class="flex gap-2 overflow-x-auto pb-2" id="btnList"></div>
+</div>
+
+<!-- PREVIEW -->
+<div class="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-[#BE1E2D]/20">
+<div class="bg-[#BE1E2D] text-white p-3 flex justify-between items-center no-print">
+<p class="text-[11px] font-black">👁️ PREVIEW - <span id="templateNameTop">Proposal Agrinas</span></p>
+<div class="flex gap-1">
+<button onclick="window.print()" class="bg-white text-[#BE1E2D] px-3 py-1.5 rounded-full text-[10px] font-black">PRINT</button>
+<button onclick="downloadPDF()" class="bg-black text-white px-3 py-1.5 rounded-full text-[10px]">PDF</button>
+</div>
+</div>
+<div id="paper" class="paper p-[35px] min-h-[600px] bg-white text-[12.5px] leading-[1.9] text-slate-800"></div>
+</div>
+
+<!-- FORM -->
+<div class="bg-white rounded-2xl p-4 shadow-sm no-print">
+<h2 class="font-black text-[12px] mb-3">2️⃣ ISI DATA - <span id="templateName" class="text-[#BE1E2D]"></span></h2>
+<div id="formArea" class="space-y-3"></div>
+<button onclick="generateDoc()" class="w-full mt-5 bg-[#BE1E2D] text-white py-4 rounded-2xl font-black text-[13px]">🚀 GENERATE PREVIEW</button>
+<div class="mt-4 bg-slate-50 p-3 rounded-xl">
+<p class="label">Riwayat di Firebase (Realtime)</p>
+<div id="listFb" class="mt-2 space-y-2 text-[11px]">Memuat...</div>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBP1lvYR22XOf-IC_34gHEEkfolSthDTzo",
+  authDomain: "kasih-kopdes.firebaseapp.com",
+  databaseURL: "https://kasih-kopdes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kasih-kopdes",
+  storageBucket: "kasih-kopdes.firebasestorage.app",
+  messagingSenderId: "746954171317",
+  appId: "1:746954171317:web:20b0de6934070e38ce2ffc",
+  measurementId: "G-V8BFK723DX"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+document.getElementById('fbStatus').innerText = '✅ Terhubung ke kasih-kopdes';
+
+const templates = {
+ agrinas:{name:'Proposal Agrinas', icon:'🚜', fields:[
+  {id:'judul', label:'Judul Proposal', ph:'Proposal Kemitraan Pupuk & Sembako'},
+  {id:'kepada', label:'Kepada', ph:'Direktur PT Agrinas', def:'PT Agrinas Pangan Nusantara'},
+  {id:'potensi', label:'Potensi Desa', ph:'Desa Kasih 800 KK...', type:'textarea'},
+  {id:'kebutuhan', label:'Kebutuhan', ph:'Beras 10 ton...', type:'textarea'},
+  {id:'skema', label:'Skema', ph:'Konsinyasi 14 hari'},
+  {id:'manfaat', label:'Manfaat', ph:'Perluasan pasar...', type:'textarea'},
+ ]},
+ dinas:{name:'Laporan Dinas', icon:'🏛️', fields:[
+  {id:'periode', label:'Periode', ph:'Triwulan IV 2026'},
+  {id:'anggota', label:'Anggota', ph:'156 anggota'},
+  {id:'omzet', label:'Omzet', ph:'Rp 385.000.000'},
+  {id:'shu', label:'SHU', ph:'Rp 42jt'},
+  {id:'kegiatan', label:'Kegiatan', ph:'Penyaluran sembako...', type:'textarea'},
+  {id:'kendala', label:'Kendala', ph:'Armada...', type:'textarea'},
+ ]},
+ umkm:{name:'MOU UMKM', icon:'🤝', fields:[
+  {id:'mitra', label:'Nama UMKM', ph:'Keripik Bu Lastri'},
+  {id:'pemilik', label:'Pemilik', ph:'Bu Lastri RT02'},
+  {id:'produk', label:'Produk', ph:'Keripik 100gr'},
+  {id:'harga_supply', label:'Harga Supply', ph:'Rp 7.000'},
+  {id:'sistem', label:'Sistem', ph:'Konsinyasi 7 hari'},
+  {id:'jangka', label:'Jangka Waktu', ph:'6 Bulan'},
+ ]},
+ bantuan:{name:'Permohonan Bantuan', icon:'📩', fields:[
+  {id:'kepada', label:'Kepada', ph:'Bupati / CSR Bank Jateng'},
+  {id:'perihal', label:'Perihal', ph:'Bantuan Etalase'},
+  {id:'latar', label:'Latar Belakang', ph:'KDKMP baru...', type:'textarea'},
+  {id:'rincian_bantuan', label:'Rincian', ph:'Etalase 2 unit', type:'textarea'},
+ ]},
+ bast:{name:'BAST', icon:'📋', fields:[
+  {id:'acara', label:'Acara', ph:'Serah Terima Sembako'},
+  {id:'pihak1', label:'Pihak I', ph:'PT Agrinas'},
+  {id:'daftar_barang', label:'Daftar Barang', ph:'Beras 5kg x 100', type:'textarea'},
+  {id:'tanggal_bast', label:'Tanggal & Tempat', ph:'28 Okt 2026 di Balai Desa'},
+ ]},
+ rab:{name:'RAB', icon:'💰', fields:[
+  {id:'kegiatan', label:'Kegiatan', ph:'Pengadaan Stok Awal'},
+  {id:'rincian', label:'Rincian: Nama | Qty | Harga', ph:'Beras 5kg | 100 | 62000', type:'textarea'},
+  {id:'total', label:'Total', ph:'Rp 11.800.000'},
+ ]},
+ penawaran:{name:'Penawaran', icon:'💌', fields:[
+  {id:'penerima', label:'Kepada', ph:'Toko Bu Siti'},
+  {id:'produk', label:'Daftar Produk', ph:'Beras 5kg - Rp 62.000', type:'textarea'},
+  {id:'berlaku', label:'Berlaku Sampai', ph:'30 Nov 2026'},
+ ]},
+ undangan:{name:'Undangan', icon:'✉️', fields:[
+  {id:'acara', label:'Acara', ph:'Rapat Rutin'},
+  {id:'hari', label:'Hari/Tgl/Jam', ph:'Senin, 28 Okt 2026, 19.30'},
+  {id:'tempat', label:'Tempat', ph:'Balai Desa Kasih'},
+  {id:'agenda', label:'Agenda', ph:'1. Laporan Stok', type:'textarea'},
+ ]},
+ berita:{name:'Berita Acara', icon:'📝', fields:[
+  {id:'acara_ba', label:'Acara Musyawarah', ph:'Musyawarah Rencana Kerja 2026'},
+  {id:'hari_ba', label:'Hari/Tgl/Jam', ph:'Senin, 28 Okt 2026, 19.30 WIB'},
+  {id:'tempat_ba', label:'Tempat', ph:'Balai Desa Kasih'},
+  {id:'pimpinan', label:'Pimpinan Rapat', ph:'Parno, S.Pd - Ketua'},
+  {id:'peserta', label:'Jumlah Peserta', ph:'35 orang (pengurus + anggota)'},
+  {id:'hasil', label:'Hasil Keputusan', ph:'1. Sepakat pengadaan...\n2. Iuran...', type:'textarea'},
+  {id:'daftar_hadir', label:'Daftar Hadir (Nama - Jabatan)', ph:'1. Parno - Ketua\n2. Siti - Bendahara\n3. ...', type:'textarea'},
+ ]}
+};
+
+let currentTemplate='agrinas';
+window.templates=templates;
+
+function initBtn(){
+ document.getElementById('btnList').innerHTML=Object.keys(templates).map(k=>{
+  let t=templates[k]; let active=k===currentTemplate?'bg-[#BE1E2D] text-white border-[#BE1E2D]':'bg-white border-slate-200';
+  return `<button onclick="window.setTemplate('${k}')" class="flex-shrink-0 border-2 ${active} px-4 py-3 rounded-2xl text-left min-w-[140px]"><p class="font-bold text-[11px]">${t.icon} ${t.name}</p></button>`;
+ }).join('');
+}
+window.setTemplate=(t)=>{ currentTemplate=t; document.getElementById('templateName').innerText=templates[t].name; document.getElementById('templateNameTop').innerText=templates[t].name; initBtn(); renderForm(); generateDoc(); }
+
+function renderForm(){
+ const f=templates[currentTemplate].fields;
+ document.getElementById('formArea').innerHTML=f.map(x=>`<div><p class="label mb-1">${x.label}</p>${x.type==='textarea'?`<textarea id="f-${x.id}" placeholder="${x.ph}" class="input h-[80px]">${x.def||''}</textarea>`:`<input id="f-${x.id}" placeholder="${x.ph}" class="input" value="${x.def||''}">`}</div>`).join('')+`<div class="grid grid-cols-2 gap-2 pt-3 border-t mt-3"><div><p class="label">No Surat</p><input id="f-no" class="input" value="KDKMP-KASIH/${new Date().getMonth()+1}/${new Date().getFullYear()}/${Math.floor(Math.random()*900)+100}"></div><div><p class="label">Tanggal</p><input id="f-tgl" type="date" class="input" value="${new Date().toISOString().slice(0,10)}"></div></div>`;
+}
+function getData(){
+ let d={}; templates[currentTemplate].fields.forEach(x=>{d[x.id]=document.getElementById('f-'+x.id)?.value||'';}); 
+ d.no=document.getElementById('f-no').value; d.tgl=document.getElementById('f-tgl').value;
+ d.kop={nama:document.getElementById('kop-nama').value, alamat:document.getElementById('kop-alamat').value, kontak:document.getElementById('kop-kontak').value, ketua:document.getElementById('kop-ketua').value, sekret:document.getElementById('kop-sekret').value, logo:document.getElementById('kop-logo').value};
+ return d;
+}
+function kopHTML(kop){
+ let logoImg = kop.logo ? `<img src="${kop.logo}" style="height:50px; margin:0 auto 8px;">` : '';
+ return `<div style="text-align:center; border-bottom:3px double #BE1E2D; padding-bottom:12px; margin-bottom:18px;">${logoImg}<h2 style="margin:0; font-weight:900; color:#BE1E2D; font-size:13px;">${kop.nama}</h2><p style="margin:0; font-size:8px; color:#333;">${kop.alamat} | ${kop.kontak}</p></div>`;
+}
+window.generateDoc=()=>{
+ const d=getData(); let kop=kopHTML(d.kop);
+ let noTgl=`<div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:15px;"><span>No: ${d.no}</span><span>${new Date(d.tgl).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</span></div>`;
+ let ttd=`<div style="display:flex; justify-content:space-between; margin-top:50px; text-align:center; font-size:11px;"><div><p>Hormat kami,</p><br><br><br><p><b><u>${d.kop.ketua}</u></b><br>Ketua</p></div><div><p>Mengetahui,</p><br><br><br><p><b><u>${d.kop.sekret}</u></b><br>Sekretaris</p></div></div>`;
+ let body='';
+ if(currentTemplate==='berita'){
+  body=`${kop}${noTgl}<h3 style="text-align:center; font-weight:900;">BERITA ACARA<br>${(d.acara_ba||'').toUpperCase()}</h3><p>Hari/Tgl: ${d.hari_ba}<br>Tempat: ${d.tempat_ba}<br>Pimpinan: ${d.pimpinan}<br>Peserta: ${d.peserta}</p><p><b>HASIL KEPUTUSAN:</b><br>${(d.hasil||'').replace(/\n/g,'<br>')}</p><p><b>DAFTAR HADIR:</b></p><pre style="background:#f8fafc; padding:10px; border:1px solid #eee; border-radius:8px; white-space:pre-wrap;">${d.daftar_hadir}</pre>${ttd}`;
+ } else {
+  body=`${kop}${noTgl}<p><b>${templates[currentTemplate].name.toUpperCase()}</b></p><p>${Object.entries(d).filter(([k])=>!['no','tgl','kop'].includes(k)).map(([k,v])=>`<b>${k}:</b> ${v}`).join('<br>').replace(/\n/g,'<br>')}</p>${ttd}`;
+ }
+ document.getElementById('paper').innerHTML=body;
+}
+window.downloadPDF=()=>{
+ const {jsPDF}=window.jspdf; const doc=new jsPDF('p','pt','a4');
+ doc.html(document.getElementById('paper'), {callback:d=>d.save(`${templates[currentTemplate].name}-${Date.now()}.pdf`), x:20, y:20, width:550, windowWidth:800});
+}
+
+// FIREBASE SAVE
+document.getElementById('btnSaveFb').onclick=()=>{
+ const d=getData();
+ push(ref(db, 'dokumen_kdkmp'), {template: currentTemplate, templateName: templates[currentTemplate].name, data: d, createdAt: serverTimestamp()})
+ .then(()=>alert('✅ Tersimpan ke Firebase kasih-kopdes!'))
+ .catch(e=>alert('Gagal: '+e.message));
+}
+onValue(ref(db, 'dokumen_kdkmp'), (snap)=>{
+ const val=snap.val(); if(!val){ document.getElementById('listFb').innerHTML='<p class="text-slate-400">Belum ada dokumen</p>'; return; }
+ const list=Object.entries(val).reverse().slice(0,10);
+ document.getElementById('listFb').innerHTML=list.map(([k,v])=>`<div class="flex justify-between bg-white border p-2 rounded-xl"><div><b>${v.templateName}</b> - ${v.data.no}<br><span class="text-[9px] text-slate-500">${new Date().toLocaleString()}</span></div><span class="text-[9px] bg-green-100 text-green-700 px-2 py-1 rounded-full h-fit">Firebase</span></div>`).join('');
+});
+
+initBtn(); renderForm(); generateDoc();
+</script>
+</body>
+</html>
